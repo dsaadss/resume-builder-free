@@ -15,6 +15,10 @@
     print-color-adjust: exact;
     background: white;
   }
+  * {
+    /* Forcing local system fonts during print to fix Chrome PDF text extraction bugs with web fonts (like Rubik) */
+    font-family: Arial, Helvetica, "Segoe UI", Tahoma, system-ui, sans-serif !important;
+  }
   .no-print {
     display: none !important;
   }

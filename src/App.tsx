@@ -114,23 +114,28 @@ const FormSectionHeader = ({
         </div>
         {children}
       </div>
-      <div className="bg-gray-50 p-2.5 rounded-lg border border-gray-100 mt-2 hover:border-blue-200 transition">
-        <div className="flex justify-between items-center mb-1">
-          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">ריווח עליון (סימטריה)</span>
-          <div className="flex items-center gap-1 bg-white px-1.5 py-0.5 rounded border border-gray-200">
-            <span className="text-[10px] font-mono font-bold text-blue-600">{currentPadding}</span>
-            <span className="text-[9px] font-bold text-gray-400">px</span>
+      <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-800 mt-2">
+        <div className="flex justify-between items-center mb-1.5 font-sans">
+          <div className="flex flex-col gap-0.5">
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">ריווח עליון (סימטריה)</span>
+            <span className={`text-[9px] font-medium ${currentPadding === 4 ? 'text-green-400' : currentPadding >= 3 && currentPadding <= 19 ? 'text-blue-400' : 'text-amber-400'}`}>
+              {currentPadding === 4 ? '• מושלם! (הכי מומלץ)' : currentPadding >= 3 && currentPadding <= 19 ? '• טווח מומלץ (3-19px)' : '• ריווח חריג (מומלץ 3-19)'}
+            </span>
+          </div>
+          <div className="flex items-center gap-1 bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700 shadow-sm">
+            <span className="text-[10px] font-mono font-bold text-blue-400">{currentPadding}</span>
+            <span className="text-[9px] font-bold text-slate-500">px</span>
           </div>
         </div>
-        <div className="flex items-center gap-2.5">
-          <span className="text-[10px] text-gray-400 font-medium whitespace-nowrap">צפוף</span>
+        <div className="flex items-center gap-3">
+          <span className="text-[10px] text-slate-500 font-medium whitespace-nowrap">צפוף</span>
           <input 
             type="range" min="0" max="48" 
             value={currentPadding}
             onChange={(e) => setValue(`settings.sectionPadding.${sectionId}`, parseInt(e.target.value))}
-            className="flex-1 accent-blue-600 cursor-pointer h-2 bg-blue-100 rounded-full appearance-none hover:bg-blue-200 transition-colors" 
+            className="flex-1 accent-blue-500 cursor-pointer h-2 bg-slate-800 rounded-full appearance-none hover:bg-slate-700 transition-colors" 
           />
-          <span className="text-[10px] text-gray-400 font-medium whitespace-nowrap">מרווח</span>
+          <span className="text-[10px] text-slate-500 font-medium whitespace-nowrap">מרווח</span>
         </div>
       </div>
     </div>
@@ -203,24 +208,24 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col md:flex-row print:block print:bg-white" dir="rtl">
+    <div className="min-h-screen bg-slate-900 flex flex-col md:flex-row print:block print:bg-white selection:bg-blue-500/30 font-sans" dir="rtl">
       {/* Form Section (Right) */}
       <div 
-        className="w-full shrink-0 p-6 overflow-y-auto h-screen bg-white shadow-lg z-10 no-print"
+        className="w-full shrink-0 p-6 overflow-y-auto h-screen bg-slate-950 shadow-2xl z-10 no-print border-l border-slate-900"
         style={{ width: typeof window !== 'undefined' && window.innerWidth >= 768 ? `${formWidth}%` : '100%' }}
       >
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 bg-gray-50 p-4 rounded-xl border border-gray-200">
-          <div className="flex flex-col gap-1">
-            <h1 className="text-3xl font-bold text-gray-800 shrink-0">בונה קורות חיים</h1>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">טען נתוני בדיקה:</span>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 bg-slate-900/80 p-5 rounded-2xl border border-slate-800 shadow-inner">
+          <div className="flex flex-col gap-1.5">
+            <h1 className="text-3xl font-black text-white shrink-0 tracking-tight">בונה קורות חיים</h1>
+            <div className="flex items-center gap-3 mt-1">
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">טען נתוני בדיקה</span>
               <div className="flex gap-1.5">
                 {[1, 2, 3].map(i => (
                   <button 
                     key={i}
                     type="button" 
                     onClick={() => reset(getFakeDataProfiles()[i-1])}
-                    className="w-7 h-7 flex items-center justify-center bg-white border border-gray-300 rounded-md text-xs font-bold text-gray-600 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition shadow-sm"
+                    className="w-8 h-8 flex items-center justify-center bg-slate-800 border border-slate-700 rounded-lg text-xs font-black text-slate-300 hover:border-blue-500 hover:text-white hover:bg-blue-600 transition-all shadow-sm active:scale-95"
                     title={`טען פרופיל דוגמא ${i}`}
                   >
                     {i}
@@ -229,16 +234,16 @@ export default function App() {
               </div>
             </div>
           </div>
-          <div className="flex gap-2">
-            <button type="button" onClick={() => setConfirmAction('clear')} className="bg-white text-gray-700 border border-gray-300 px-3 py-2 rounded-lg hover:bg-gray-50 transition text-sm font-medium whitespace-nowrap shadow-sm">
+          <div className="flex gap-2.5">
+            <button type="button" onClick={() => setConfirmAction('clear')} className="bg-slate-800 text-slate-300 border border-slate-700 px-4 py-2 rounded-xl hover:bg-slate-700 hover:text-white transition-all text-sm font-semibold whitespace-nowrap shadow-lg active:scale-95">
               נקה טופס
             </button>
-            <button type="button" onClick={() => setConfirmAction('reset')} className="bg-red-50 text-red-600 px-3 py-2 rounded-lg hover:bg-red-100 transition text-sm font-medium whitespace-nowrap" title="טען את קורות החיים של ירדן (לדוגמה)">
+            <button type="button" onClick={() => setConfirmAction('reset')} className="bg-red-500/10 text-red-400 border border-red-500/20 px-4 py-2 rounded-xl hover:bg-red-500 hover:text-white transition-all text-sm font-semibold whitespace-nowrap active:scale-95" title="טען את קורות החיים של ירדן (לדוגמה)">
               טען דוגמא
             </button>
-            <button onClick={() => handlePrint()} className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition shadow-md">
+            <button onClick={() => handlePrint()} className="bg-blue-600 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 hover:bg-blue-500 transition-all shadow-[0_0_20px_rgba(37,99,235,0.3)] active:scale-95 font-bold">
               <Printer size={20} />
-              <span className="hidden sm:inline whitespace-nowrap">הורד PDF</span>
+              <span className="hidden sm:inline whitespace-nowrap text-base">הורד PDF</span>
             </button>
           </div>
         </div>
@@ -246,16 +251,16 @@ export default function App() {
         <form className="space-y-8">
           {/* Template Selection */}
           <section>
-            <h2 className="text-xl font-semibold mb-4 text-gray-700 border-b pb-2">תבנית</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <h2 className="text-xl font-black mb-4 text-slate-100 border-b border-slate-800 pb-2">תבנית</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {[
                 { id: 'classic', name: 'קלאסי (סרגל צד)' },
-                { id: 'modern', name: 'מודרני (כותרת עליונה)' },
-                { id: 'minimalist', name: 'מינימליסטי (נקי)' }
+                { id: 'modern', name: 'מודרני (עליונה)' },
+                { id: 'minimalist', name: 'מינימליסטי' }
               ].map(tpl => (
                 <label key={tpl.id} className="cursor-pointer">
                   <input type="radio" value={tpl.id} {...register('template')} className="hidden" />
-                  <div className={`border-2 rounded-lg p-3 text-center transition-all ${resumeData.template === tpl.id ? 'border-blue-600 bg-blue-50 text-blue-700 font-bold shadow-sm' : 'border-gray-200 hover:border-blue-300 text-gray-600'}`}>
+                  <div className={`border-2 rounded-xl p-3 text-center transition-all ${resumeData.template === tpl.id ? 'border-blue-600 bg-blue-600/10 text-blue-400 font-bold shadow-[0_0_15px_rgba(37,99,235,0.2)]' : 'border-slate-800 bg-slate-900 hover:border-slate-600 text-slate-400'}`}>
                     {tpl.name}
                   </div>
                 </label>
@@ -265,13 +270,13 @@ export default function App() {
 
           {/* Theme Color */}
           <section>
-            <h2 className="text-xl font-semibold mb-4 text-gray-700 border-b pb-2">עיצוב</h2>
-            <div className="flex gap-3">
-              {['#001f3f', '#2c3e50', '#0f766e', '#6b21a8', '#be123c', '#1e3a8a'].map(color => (
+            <h2 className="text-xl font-black mb-4 text-slate-100 border-b border-slate-800 pb-2">עיצוב</h2>
+            <div className="flex gap-4">
+              {['#001f3f', '#2c3e50', '#0f766e', '#6b21a8', '#be123c', '#2563eb'].map(color => (
                 <label key={color} className="cursor-pointer">
                   <input type="radio" value={color} {...register('themeColor')} className="hidden" />
                   <div 
-                    className={`w-8 h-8 rounded-full border-2 transition-transform ${resumeData.themeColor === color ? 'border-gray-800 scale-110' : 'border-transparent hover:scale-105'}`}
+                    className={`w-9 h-9 rounded-full border-2 transition-all ${resumeData.themeColor === color ? 'border-white ring-4 ring-blue-600/30 scale-110' : 'border-slate-800 hover:border-slate-600 hover:scale-105'}`}
                     style={{ backgroundColor: color }}
                   ></div>
                 </label>
@@ -281,22 +286,27 @@ export default function App() {
 
           {/* Advanced Layout Settings */}
           <section>
-            <h2 className="text-xl font-semibold mb-4 text-gray-700 border-b pb-2">הגדרות מתקדמות</h2>
+            <h2 className="text-xl font-black mb-4 text-slate-100 border-b border-slate-800 pb-2">הגדרות מתקדמות</h2>
             <div className="grid grid-cols-1 gap-4">
-              <div>
-                <label className="flex justify-between text-sm font-medium text-gray-600 mb-1">
-                  <span>ריווח שוליים כללי (Padding)</span>
-                  <span className="font-mono text-blue-600 font-bold">{resumeData.settings.padding}px</span>
+              <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-800">
+                <label className="flex flex-col gap-1 mb-3">
+                  <div className="flex justify-between items-center text-sm font-bold text-slate-300">
+                    <span>ריווח שוליים כללי (Padding)</span>
+                    <span className="font-mono text-blue-400 font-bold">{resumeData.settings.padding}px</span>
+                  </div>
+                  <span className={`text-[10px] font-medium transition-colors ${resumeData.settings.padding === 4 ? 'text-green-400' : resumeData.settings.padding >= 3 && resumeData.settings.padding <= 19 ? 'text-blue-400' : 'text-amber-400'}`}>
+                    {resumeData.settings.padding === 4 ? '• מושלם! (הכי מומלץ)' : resumeData.settings.padding >= 3 && resumeData.settings.padding <= 19 ? '• טווח מומלץ לתוצאה נקייה (3-19px)' : '• שימו לב: ריווח חריג עלול לפגוע במבנה'}
+                  </span>
                 </label>
                 <div className="flex items-center gap-3">
-                  <span className="text-xs text-gray-500 font-medium whitespace-nowrap">צפוף</span>
+                  <span className="text-xs text-slate-500 font-medium whitespace-nowrap">צפוף</span>
                   <input 
                     type="range" min="0" max="32" 
                     value={resumeData.settings.padding} 
                     onChange={(e) => setValue('settings.padding', parseInt(e.target.value))}
-                    className="flex-1 accent-blue-600 cursor-pointer h-2 bg-blue-100 rounded-full appearance-none hover:bg-blue-200 transition-colors" 
+                    className="flex-1 accent-blue-500 cursor-pointer h-2 bg-slate-800 rounded-full appearance-none hover:bg-slate-700 transition-colors" 
                   />
-                  <span className="text-xs text-gray-500 font-medium whitespace-nowrap">מרווח</span>
+                  <span className="text-xs text-slate-500 font-medium whitespace-nowrap">מרווח</span>
                 </div>
               </div>
             </div>
@@ -314,17 +324,17 @@ export default function App() {
               moveOrder={undefined as any}
             />
             <div className="grid grid-cols-2 gap-4">
-              <div className="col-span-2 mb-2 p-4 bg-gray-50 rounded-xl border border-gray-200">
-                <label className="block text-sm font-bold text-gray-700 mb-3">גלריית תלושי/תמונות פרופיל</label>
+              <div className="col-span-2 mb-2 p-4 bg-slate-900/50 rounded-2xl border border-slate-800 shadow-inner">
+                <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-4">גלריית תלושי/תמונות פרופיל</label>
                 
-                <div className="flex flex-wrap gap-3 mb-4">
+                <div className="flex flex-wrap gap-4 mb-4">
                   {resumeData.personal.profileImages?.map(img => (
                     <div 
                       key={img.id} 
-                      className={`relative w-24 h-24 rounded-full overflow-hidden border-4 transition-all group ${resumeData.personal.activeProfileImageId === img.id ? 'border-blue-500 shadow-md scale-110' : 'border-transparent hover:border-blue-300'}`}
+                      className={`relative w-24 h-24 rounded-full overflow-hidden border-4 transition-all group ${resumeData.personal.activeProfileImageId === img.id ? 'border-blue-500 shadow-[0_0_20px_rgba(37,99,235,0.4)] scale-110' : 'border-slate-800 hover:border-blue-400'}`}
                     >
                       <img src={img.dataUrl} alt="Profile" className="w-full h-full object-cover" style={{ transform: `translate(${(img.posX - 50)}%, ${(img.posY - 50)}%) scale(${img.scale && img.scale > 0 ? (img.scale / 100) : 1}) rotate(${img.rotate || 0}deg)` }} />
-                      <div className="absolute inset-0 bg-black/60 flex items-center justify-between px-3 opacity-0 group-hover:opacity-100 transition z-10">
+                      <div className="absolute inset-0 bg-slate-950/70 flex items-center justify-between px-3 opacity-0 group-hover:opacity-100 transition z-10">
                         <button 
                           type="button" 
                           onClick={(e) => {
@@ -333,7 +343,7 @@ export default function App() {
                             const newActiveId = newImages.length > 0 ? newImages[0].id : undefined;
                             reset({ ...watch(), personal: { ...watch('personal'), profileImages: newImages, activeProfileImageId: newActiveId } });
                           }} 
-                          className="text-red-400 hover:text-red-300 transition" title="מחק"
+                          className="text-red-400 hover:text-red-300 transition-colors transform hover:scale-110" title="מחק"
                         >
                           <Trash2 size={22} />
                         </button>
@@ -343,7 +353,7 @@ export default function App() {
                             e.stopPropagation();
                             reset({ ...watch(), personal: { ...watch('personal'), activeProfileImageId: img.id } });
                           }} 
-                          className="text-green-400 hover:text-green-300 transition" title="בחר"
+                          className="text-green-400 hover:text-green-300 transition-colors transform hover:scale-110" title="בחר"
                         >
                           <Check size={26} strokeWidth={3} />
                         </button>
@@ -351,7 +361,7 @@ export default function App() {
                     </div>
                   ))}
                   
-                  <label className="w-16 h-16 rounded-full bg-white border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-500 cursor-pointer hover:bg-blue-50 hover:border-blue-300 hover:text-blue-500 transition shadow-sm" title="הוסף תמונה חדשה">
+                  <label className="w-16 h-16 rounded-full bg-slate-900 border-2 border-dashed border-slate-700 flex flex-col items-center justify-center text-slate-500 cursor-pointer hover:bg-slate-800 hover:border-blue-500 hover:text-blue-400 transition shadow-sm active:scale-95" title="הוסף תמונה חדשה">
                     <Plus size={24} />
                     <input type="file" className="hidden" accept="image/*" onChange={(e) => {
                       const file = e.target.files?.[0];
@@ -371,8 +381,8 @@ export default function App() {
                 </div>
                 
                 {resumeData.personal.activeProfileImageId && (
-                  <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm mt-2">
-                    <h4 className="text-xs font-semibold text-gray-600 mb-3 text-center">התאמת תמונה - גרור בתוך העיגול או השתמש במחוונים:</h4>
+                  <div className="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-xl mt-4">
+                    <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 text-center">התאמת תמונה - גרור בתוך העיגול או השתמש במחוונים</h4>
                     
                     <DraggableImagePreview 
                       img={resumeData.personal.profileImages.find(i => i.id === resumeData.personal.activeProfileImageId)!}
@@ -491,7 +501,7 @@ export default function App() {
                             );
                             setValue('personal.profileImages', newImages);
                           }}
-                          className="w-12 text-[11px] border rounded p-0.5 text-center font-mono focus:border-blue-500 focus:outline-none"
+                          className="w-12 text-[11px] bg-slate-950 border border-slate-800 text-slate-300 rounded p-1 text-center font-mono focus:border-blue-500 focus:outline-none"
                         />
                       </div>
                     </div>
@@ -499,32 +509,32 @@ export default function App() {
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">שם פרטי</label>
-                <input {...register('personal.firstName')} className="w-full border rounded-md p-2 focus:ring-2 focus:ring-blue-500 outline-none" />
+                <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">שם פרטי</label>
+                <input {...register('personal.firstName')} className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-slate-100 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">שם משפחה</label>
-                <input {...register('personal.lastName')} className="w-full border rounded-md p-2 focus:ring-2 focus:ring-blue-500 outline-none" />
+                <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">שם משפחה</label>
+                <input {...register('personal.lastName')} className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-slate-100 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">הגדרת תפקיד</label>
-                <input {...register('personal.title')} className="w-full border rounded-md p-2 focus:ring-2 focus:ring-blue-500 outline-none" />
+                <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">הגדרת תפקיד</label>
+                <input {...register('personal.title')} className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-slate-100 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">אימייל</label>
-                <input {...register('personal.email')} className="w-full border rounded-md p-2 focus:ring-2 focus:ring-blue-500 outline-none" dir="ltr" />
+                <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">אימייל</label>
+                <input {...register('personal.email')} className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-slate-100 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all" dir="ltr" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">טלפון נייד</label>
-                <input {...register('personal.phone')} className="w-full border rounded-md p-2 focus:ring-2 focus:ring-blue-500 outline-none" dir="ltr" />
+                <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">טלפון נייד</label>
+                <input {...register('personal.phone')} className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-slate-100 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all" dir="ltr" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">כתובת</label>
-                <input {...register('personal.address')} className="w-full border rounded-md p-2 focus:ring-2 focus:ring-blue-500 outline-none" />
+                <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">כתובת</label>
+                <input {...register('personal.address')} className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-slate-100 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">תעודת זהות</label>
-                <input {...register('personal.idNumber')} className="w-full border rounded-md p-2 focus:ring-2 focus:ring-blue-500 outline-none" dir="ltr" />
+                <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">תעודת זהות</label>
+                <input {...register('personal.idNumber')} className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-slate-100 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all" dir="ltr" />
               </div>
             </div>
           </section>
@@ -540,7 +550,7 @@ export default function App() {
               setValue={setValue} 
               moveOrder={moveOrder} 
             />
-            <textarea {...register('summary')} rows={4} className="w-full border rounded-md p-2 focus:ring-2 focus:ring-blue-500 outline-none resize-none" placeholder="תיאור קצר המפרט את הניסיון המקצועי שלך..."></textarea>
+            <textarea {...register('summary')} rows={4} className="w-full bg-slate-900 border border-slate-800 rounded-lg p-3 text-slate-100 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none resize-none transition-all" placeholder="תיאור קצר המפרט את הניסיון המקצועי שלך..."></textarea>
           </section>
 
           {/* Experience */}
@@ -563,7 +573,7 @@ export default function App() {
             </FormSectionHeader>
             <div className="space-y-4">
               {resumeData.experience.map((exp, index) => (
-                <div key={exp.id} className="bg-gray-50 p-4 rounded-lg border relative group">
+                <div key={exp.id} className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 relative group transition-all hover:border-slate-700">
                   <div className="absolute top-2 left-2 flex gap-1 opacity-0 group-hover:opacity-100 transition">
                     <button type="button" onClick={() => {
                       if (index === 0) return;
@@ -590,23 +600,23 @@ export default function App() {
                       <Trash2 size={16} />
                     </button>
                   </div>
-                  <div className="grid grid-cols-2 gap-4 mb-2">
+                  <div className="grid grid-cols-2 gap-4 mb-3">
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">תפקיד</label>
-                      <input {...register(`experience.${index}.role`)} className="w-full border rounded p-1.5 text-sm" />
+                      <label className="block text-[10px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">תפקיד</label>
+                      <input {...register(`experience.${index}.role`)} className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-slate-100 focus:ring-1 focus:ring-blue-500/50 outline-none transition-all" />
                     </div>
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">חברה/ארגון</label>
-                      <input {...register(`experience.${index}.company`)} className="w-full border rounded p-1.5 text-sm" />
+                      <label className="block text-[10px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">חברה/ארגון</label>
+                      <input {...register(`experience.${index}.company`)} className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-slate-100 focus:ring-1 focus:ring-blue-500/50 outline-none transition-all" />
                     </div>
                     <div className="col-span-2">
-                      <label className="block text-xs text-gray-500 mb-1">שנים</label>
-                      <input {...register(`experience.${index}.dates`)} className="w-full border rounded p-1.5 text-sm" />
+                      <label className="block text-[10px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">שנים</label>
+                      <input {...register(`experience.${index}.dates`)} className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-slate-100 focus:ring-1 focus:ring-blue-500/50 outline-none transition-all" />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs text-gray-500 mb-1">תיאור</label>
-                    <textarea {...register(`experience.${index}.description`)} rows={3} className="w-full border rounded p-1.5 text-sm resize-none" />
+                    <label className="block text-[10px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">תיאור</label>
+                    <textarea {...register(`experience.${index}.description`)} rows={3} className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-slate-100 focus:ring-1 focus:ring-blue-500/50 outline-none resize-none transition-all" />
                   </div>
                 </div>
               ))}
@@ -633,7 +643,7 @@ export default function App() {
             </FormSectionHeader>
             <div className="space-y-4">
               {resumeData.education.map((edu, index) => (
-                <div key={edu.id} className="bg-gray-50 p-4 rounded-lg border relative group">
+                <div key={edu.id} className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 relative group transition-all hover:border-slate-700">
                   <div className="absolute top-2 left-2 flex gap-1 opacity-0 group-hover:opacity-100 transition">
                     <button type="button" onClick={() => {
                       if (index === 0) return;
@@ -662,20 +672,20 @@ export default function App() {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">תואר/תעודה</label>
-                      <input {...register(`education.${index}.degree`)} className="w-full border rounded p-1.5 text-sm" />
+                      <label className="block text-[10px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">תואר/תעודה</label>
+                      <input {...register(`education.${index}.degree`)} className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-slate-100 focus:ring-1 focus:ring-blue-500/50 outline-none transition-all" />
                     </div>
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">מוסד לימודים</label>
-                      <input {...register(`education.${index}.institution`)} className="w-full border rounded p-1.5 text-sm" />
+                      <label className="block text-[10px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">מוסד לימודים</label>
+                      <input {...register(`education.${index}.institution`)} className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-slate-100 focus:ring-1 focus:ring-blue-500/50 outline-none transition-all" />
                     </div>
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">שנים</label>
-                      <input {...register(`education.${index}.dates`)} className="w-full border rounded p-1.5 text-sm" />
+                      <label className="block text-[10px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">שנים</label>
+                      <input {...register(`education.${index}.dates`)} className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-slate-100 focus:ring-1 focus:ring-blue-500/50 outline-none transition-all" />
                     </div>
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">ממוצע/הערות</label>
-                      <input {...register(`education.${index}.gpa`)} className="w-full border rounded p-1.5 text-sm" />
+                      <label className="block text-[10px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">ממוצע/הערות</label>
+                      <input {...register(`education.${index}.gpa`)} className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-slate-100 focus:ring-1 focus:ring-blue-500/50 outline-none transition-all" />
                     </div>
                   </div>
                 </div>
@@ -701,15 +711,15 @@ export default function App() {
                 <Plus size={16} /> הוסף קורס
               </button>
             </FormSectionHeader>
-            <div className="space-y-2">
+            <div className="space-y-3">
               {resumeData.courses.map((course, index) => (
                 <div key={course.id} className="flex gap-2 items-center">
-                  <input {...register(`courses.${index}.name`)} placeholder="שם הקורס" className="flex-1 border rounded p-1.5 text-sm" />
-                  <input {...register(`courses.${index}.grade`)} placeholder="ציון" className="w-24 border rounded p-1.5 text-sm" />
+                  <input {...register(`courses.${index}.name`)} placeholder="שם הקורס" className="flex-1 bg-slate-900 border border-slate-800 rounded-lg p-2 text-slate-100 focus:ring-1 focus:ring-blue-500/50 outline-none transition-all" />
+                  <input {...register(`courses.${index}.grade`)} placeholder="ציון" className="w-24 bg-slate-900 border border-slate-800 rounded-lg p-2 text-slate-100 focus:ring-1 focus:ring-blue-500/50 outline-none transition-all" />
                   <button type="button" onClick={() => {
                     const current = watch('courses');
                     reset({ ...watch(), courses: current.filter((_, i) => i !== index) });
-                  }} className="text-red-500 p-1"><Trash2 size={16} /></button>
+                  }} className="text-red-400 hover:text-red-300 p-2 transform hover:scale-110 transition-all"><Trash2 size={18} /></button>
                 </div>
               ))}
             </div>
@@ -735,26 +745,26 @@ export default function App() {
             </FormSectionHeader>
             <div className="space-y-4">
               {resumeData.military.map((mil, index) => (
-                <div key={mil.id} className="bg-gray-50 p-4 rounded-lg border relative group">
+                <div key={mil.id} className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 relative group transition-all hover:border-slate-700">
                   <button type="button" onClick={() => {
                     const current = watch('military');
                     reset({ ...watch(), military: current.filter((_, i) => i !== index) });
                   }} className="absolute top-2 left-2 text-red-500 opacity-0 group-hover:opacity-100 transition">
                     <Trash2 size={16} />
                   </button>
-                  <div className="grid grid-cols-2 gap-4 mb-2">
+                  <div className="grid grid-cols-2 gap-4 mb-3">
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">תפקיד</label>
-                      <input {...register(`military.${index}.role`)} className="w-full border rounded p-1.5 text-sm" />
+                      <label className="block text-[10px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">תפקיד</label>
+                      <input {...register(`military.${index}.role`)} className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-slate-100 focus:ring-1 focus:ring-blue-500/50 outline-none transition-all" />
                     </div>
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">שנים</label>
-                      <input {...register(`military.${index}.dates`)} className="w-full border rounded p-1.5 text-sm" />
+                      <label className="block text-[10px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">שנים</label>
+                      <input {...register(`military.${index}.dates`)} className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-slate-100 focus:ring-1 focus:ring-blue-500/50 outline-none transition-all" />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs text-gray-500 mb-1">תיאור</label>
-                    <textarea {...register(`military.${index}.description`)} rows={2} className="w-full border rounded p-1.5 text-sm resize-none" />
+                    <label className="block text-[10px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">תיאור</label>
+                    <textarea {...register(`military.${index}.description`)} rows={2} className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-slate-100 focus:ring-1 focus:ring-blue-500/50 outline-none resize-none transition-all" />
                   </div>
                 </div>
               ))}
@@ -781,20 +791,20 @@ export default function App() {
             </FormSectionHeader>
             <div className="space-y-4">
               {resumeData.projects.map((proj, index) => (
-                <div key={proj.id} className="bg-gray-50 p-4 rounded-lg border relative group">
+                <div key={proj.id} className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 relative group transition-all hover:border-slate-700">
                   <button type="button" onClick={() => {
                     const current = watch('projects');
                     reset({ ...watch(), projects: current.filter((_, i) => i !== index) });
                   }} className="absolute top-2 left-2 text-red-500 opacity-0 group-hover:opacity-100 transition">
                     <Trash2 size={16} />
                   </button>
-                  <div className="mb-2">
-                    <label className="block text-xs text-gray-500 mb-1">שם הפרוייקט</label>
-                    <input {...register(`projects.${index}.name`)} className="w-full border rounded p-1.5 text-sm" />
+                  <div className="mb-3">
+                    <label className="block text-[10px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">שם הפרוייקט</label>
+                    <input {...register(`projects.${index}.name`)} className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-slate-100 focus:ring-1 focus:ring-blue-500/50 outline-none transition-all" />
                   </div>
                   <div>
-                    <label className="block text-xs text-gray-500 mb-1">תיאור</label>
-                    <textarea {...register(`projects.${index}.description`)} rows={3} className="w-full border rounded p-1.5 text-sm resize-none" />
+                    <label className="block text-[10px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">תיאור</label>
+                    <textarea {...register(`projects.${index}.description`)} rows={3} className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-slate-100 focus:ring-1 focus:ring-blue-500/50 outline-none resize-none transition-all" />
                   </div>
                 </div>
               ))}
@@ -822,22 +832,22 @@ export default function App() {
                   <Plus size={16} /> הוסף
                 </button>
               </FormSectionHeader>
-              <div className="flex gap-4 mb-3 pb-2 border-b border-gray-100">
-                <label className="flex items-center gap-1.5 text-xs text-gray-600 cursor-pointer hover:text-blue-600">
-                  <input type="radio" value="bullets" {...register('settings.skillsFormat')} className="accent-blue-600" /> רשימה ארוכה
+              <div className="flex gap-4 mb-4 pb-2 border-b border-slate-800">
+                <label className="flex items-center gap-2 text-xs font-bold text-slate-400 cursor-pointer hover:text-blue-400 transition-colors">
+                  <input type="radio" value="bullets" {...register('settings.skillsFormat')} className="accent-blue-500 w-4 h-4" /> רשימה ארוכה
                 </label>
-                <label className="flex items-center gap-1.5 text-xs text-gray-600 cursor-pointer hover:text-blue-600">
-                  <input type="radio" value="comma-separated" {...register('settings.skillsFormat')} className="accent-blue-600" /> פסקה חסכונית (פסיקים)
+                <label className="flex items-center gap-2 text-xs font-bold text-slate-400 cursor-pointer hover:text-blue-400 transition-colors">
+                  <input type="radio" value="comma-separated" {...register('settings.skillsFormat')} className="accent-blue-500 w-4 h-4" /> פסקה חסכונית (פסיקים)
                 </label>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {resumeData.skills.map((skill, index) => (
                   <div key={skill.id} className="flex gap-2 items-center">
-                    <input {...register(`skills.${index}.name`)} className="flex-1 border rounded p-1.5 text-sm" dir="ltr" />
+                    <input {...register(`skills.${index}.name`)} className="flex-1 bg-slate-900 border border-slate-800 rounded-lg p-2 text-slate-100 focus:ring-1 focus:ring-blue-500/50 outline-none transition-all" dir="ltr" />
                     <button type="button" onClick={() => {
                       const current = watch('skills');
                       reset({ ...watch(), skills: current.filter((_, i) => i !== index) });
-                    }} className="text-red-500 p-1"><Trash2 size={16} /></button>
+                    }} className="text-red-400 hover:text-red-300 p-2 transform hover:scale-110 transition-all"><Trash2 size={18} /></button>
                   </div>
                 ))}
               </div>
@@ -862,14 +872,14 @@ export default function App() {
                   <Plus size={16} /> הוסף
                 </button>
               </FormSectionHeader>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {resumeData.languages.map((lang, index) => (
                   <div key={lang.id} className="flex gap-2 items-center">
-                    <input {...register(`languages.${index}.name`)} className="flex-1 border rounded p-1.5 text-sm" dir="ltr" />
+                    <input {...register(`languages.${index}.name`)} className="flex-1 bg-slate-900 border border-slate-800 rounded-lg p-2 text-slate-100 focus:ring-1 focus:ring-blue-500/50 outline-none transition-all" dir="ltr" />
                     <button type="button" onClick={() => {
                       const current = watch('languages');
                       reset({ ...watch(), languages: current.filter((_, i) => i !== index) });
-                    }} className="text-red-500 p-1"><Trash2 size={16} /></button>
+                    }} className="text-red-400 hover:text-red-300 p-2 transform hover:scale-110 transition-all"><Trash2 size={18} /></button>
                   </div>
                 ))}
               </div>
@@ -894,15 +904,15 @@ export default function App() {
                   <Plus size={16} /> הוסף קישור
                 </button>
               </FormSectionHeader>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {resumeData.links.map((link, index) => (
                   <div key={link.id} className="flex gap-2 items-center">
-                    <input {...register(`links.${index}.name`)} placeholder="שם (לדוגמה: LinkedIn)" className="w-1/3 border rounded p-1.5 text-sm" dir="ltr" />
-                    <input {...register(`links.${index}.url`)} placeholder="URL" className="flex-1 border rounded p-1.5 text-sm" dir="ltr" />
+                    <input {...register(`links.${index}.name`)} placeholder="שם (לדוגמה: LinkedIn)" className="w-1/3 bg-slate-900 border border-slate-800 rounded-lg p-2 text-slate-100 focus:ring-1 focus:ring-blue-500/50 outline-none transition-all" dir="ltr" />
+                    <input {...register(`links.${index}.url`)} placeholder="URL" className="flex-1 bg-slate-900 border border-slate-800 rounded-lg p-2 text-slate-100 focus:ring-1 focus:ring-blue-500/50 outline-none transition-all" dir="ltr" />
                     <button type="button" onClick={() => {
                       const current = watch('links');
                       reset({ ...watch(), links: current.filter((_, i) => i !== index) });
-                    }} className="text-red-500 p-1"><Trash2 size={16} /></button>
+                    }} className="text-red-400 hover:text-red-300 p-2 transform hover:scale-110 transition-all"><Trash2 size={18} /></button>
                   </div>
                 ))}
               </div>
@@ -920,9 +930,9 @@ export default function App() {
                 moveOrder={undefined as any}
               />
               <div className="space-y-4">
-                <label className="cursor-pointer flex items-center justify-center gap-2 w-full border-2 border-dashed border-gray-300 rounded-lg p-6 hover:bg-gray-50 transition text-gray-600">
+                <label className="cursor-pointer flex items-center justify-center gap-2 w-full border-2 border-dashed border-slate-800 rounded-2xl p-8 hover:bg-slate-900/50 hover:border-blue-500/50 transition-all text-slate-400 hover:text-blue-400 active:scale-[0.99]">
                   <Upload size={24} />
-                  <span>העלה גיליון ציונים (PDF)</span>
+                  <span className="font-bold">העלה גיליון ציונים (PDF)</span>
                   <input type="file" accept=".pdf" className="hidden" onChange={handlePdfUpload} />
                 </label>
                 {resumeData.appendixImages && resumeData.appendixImages.length > 0 && (
@@ -939,13 +949,11 @@ export default function App() {
 
       {/* Resizable Splitter */}
       <div 
-        className="hidden md:flex flex-col items-center justify-center shrink-0 w-2 cursor-col-resize bg-gray-200 hover:bg-blue-400 active:bg-blue-600 transition group z-20"
+        className="hidden md:flex flex-col items-center justify-center shrink-0 w-2 cursor-col-resize bg-slate-900 hover:bg-blue-600 active:bg-blue-500 transition-all group z-20"
         onMouseDown={(e) => {
           e.preventDefault();
           const moveListener = (moveEvent: MouseEvent) => {
             const windowWidth = window.innerWidth;
-            // In RTL, 0 is right. The Form is attached right.
-            // Form width is distance from right side: window.innerWidth - moveEvent.clientX
             const newPercentage = ((windowWidth - moveEvent.clientX) / windowWidth) * 100;
             if (newPercentage > 20 && newPercentage < 80) setFormWidth(newPercentage);
           };
@@ -959,16 +967,16 @@ export default function App() {
           document.addEventListener('mouseup', upListener);
         }}
       >
-        <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition">
-          <div className="w-1 h-1 rounded-full bg-white shadow-sm"></div>
-          <div className="w-1 h-1 rounded-full bg-white shadow-sm"></div>
-          <div className="w-1 h-1 rounded-full bg-white shadow-sm"></div>
+        <div className="flex flex-col gap-1.5 opacity-0 group-hover:opacity-100 transition-all">
+          <div className="w-1.5 h-1.5 rounded-full bg-blue-400 shadow-[0_0_10px_rgba(96,165,250,0.5)]"></div>
+          <div className="w-1.5 h-1.5 rounded-full bg-blue-400 shadow-[0_0_10px_rgba(96,165,250,0.5)]"></div>
+          <div className="w-1.5 h-1.5 rounded-full bg-blue-400 shadow-[0_0_10px_rgba(96,165,250,0.5)]"></div>
         </div>
       </div>
 
       {/* Preview Section (Left) */}
       <div 
-        className="bg-gray-200 p-4 md:p-8 overflow-y-auto h-screen flex justify-center items-start print:p-0 print:m-0 print:w-full print:h-auto print:block print:bg-white print:overflow-visible shrink-0"
+        className="bg-slate-900 p-4 md:p-12 overflow-y-auto h-screen flex justify-center items-start print:p-0 print:m-0 print:w-full print:h-auto print:block print:bg-white print:overflow-visible shrink-0 shadow-inner"
         style={{ width: typeof window !== 'undefined' && window.innerWidth >= 768 ? `${100 - formWidth}%` : '100%' }}
       >
         <div className="transform scale-[0.6] sm:scale-[0.8] md:scale-[0.6] lg:scale-[0.8] xl:scale-100 origin-top print:transform-none print:scale-100 print:w-full print:h-auto print:m-0 print:p-0">
@@ -987,18 +995,18 @@ export default function App() {
       </div>
 
       {confirmAction && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] no-print">
-          <div className="bg-white p-6 rounded-xl shadow-xl max-w-sm w-full border border-gray-100 m-4" dir="rtl">
-            <h3 className="text-xl font-bold mb-3 text-gray-800">
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-[100] no-print p-4">
+          <div className="bg-slate-900 p-8 rounded-3xl shadow-2xl max-w-md w-full border border-slate-800 animate-in fade-in zoom-in duration-200" dir="rtl">
+            <h3 className="text-2xl font-black mb-4 text-white">
               {confirmAction === 'clear' ? 'נקה נתונים?' : 'חזור לנתוני דוגמה?'}
             </h3>
-            <p className="text-gray-600 mb-6 text-sm leading-relaxed">
+            <p className="text-slate-400 mb-8 text-sm leading-relaxed font-medium">
               {confirmAction === 'clear' 
-                ? 'הפעולה תמחק את כל הטופס ותתחיל מסמך ריק. כל מה שהזנת יימחק ולא ניתן לבטל פעולה זו.'
-                : 'הפעולה תשחזר את קורות החיים המקוריים של ירדן ותמחוק את מה שהזנת. לא ניתן לבטל פעולה זו.'}
+                ? 'הפעולה תמחק את כל הטופס ותתחיל מסמך ריק. כל מה שהזנת יימחק לצמיתות.'
+                : 'הפעולה תשחזר את קורות החיים המקוריים של ירדן ותמחוק את השינויים שלך.'}
             </p>
-            <div className="flex justify-end gap-3">
-              <button type="button" onClick={() => setConfirmAction(null)} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition font-medium">ביטול</button>
+            <div className="flex justify-end gap-4">
+              <button type="button" onClick={() => setConfirmAction(null)} className="flex-1 px-6 py-3 text-sm font-bold text-slate-400 hover:bg-slate-800 rounded-xl transition-all border border-slate-800 hover:text-white">ביטול</button>
               <button 
                 type="button"
                 onClick={() => {
@@ -1006,9 +1014,9 @@ export default function App() {
                   if (confirmAction === 'reset') reset(initialResumeData);
                   setConfirmAction(null);
                 }} 
-                className="px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium shadow-sm"
+                className="flex-1 px-6 py-3 text-sm font-bold bg-red-600 text-white rounded-xl hover:bg-red-500 transition-all shadow-lg active:scale-95"
               >
-                כן, אני בטוח
+                כן, בצע
               </button>
             </div>
           </div>

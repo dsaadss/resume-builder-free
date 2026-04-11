@@ -59,6 +59,10 @@ export default function App() {
         canvas.height = viewport.height;
         canvas.width = viewport.width;
 
+        // Fill with white to prevent transparency/ghosting issues in print
+        context.fillStyle = '#ffffff';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+
         await page.render({ canvasContext: context, viewport }).promise;
         images.push(canvas.toDataURL('image/png'));
       }

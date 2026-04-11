@@ -5,6 +5,8 @@
   --font-sans: "Rubik", ui-sans-serif, system-ui, sans-serif;
 }
 
+@variant dark (&:where(.dark, .dark *));
+
 @media print {
   @page {
     size: A4;

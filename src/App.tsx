@@ -2,9 +2,7 @@ import { useRef, useEffect, useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { Upload, Printer, Plus, Trash2, GripVertical } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
-import * as pdfjsLib from 'pdfjs-dist';
-
-pdfjsLib.GlobalWorkerOptions.workerSrc = '//unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+import { PDFDocument } from 'pdf-lib';
 import { ResumeData, initialResumeData, emptyResumeData } from './types';
 import { ClassicTemplate, ModernTemplate, MinimalistTemplate } from './templates';
 
@@ -23,6 +21,11 @@ const loadSavedData = (): ResumeData => {
 
 export default function App() {
   const [confirmAction, setConfirmAction] = useState<'clear' | 'reset' | null>(null);
+  const [showMergeModal, setShowMergeModal] = useState(false);
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
+  const [appendixFile, setAppendixFile] = useState<File | null>(null);
+  const [isMerging, setIsMerging] = useState(false);
+  
   const { register, control, handleSubmit, reset, watch } = useForm<ResumeData>({
     defaultValues: loadSavedData(),
   });
@@ -39,41 +42,47 @@ export default function App() {
     window.print();
   };
 
-  const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    try {
-      const arrayBuffer = await file.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-      const totalPages = pdf.numPages;
-      const images: string[] = [];
-
-      for (let i = 1; i <= totalPages; i++) {
-        const page = await pdf.getPage(i);
-        const viewport = page.getViewport({ scale: 2.0 });
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
-        if (!context) continue;
-
-        canvas.height = viewport.height;
-        canvas.width = viewport.width;
-
-        // Fill with white to prevent transparency/ghosting issues in print
-        context.fillStyle = '#ffffff';
-        context.fillRect(0, 0, canvas.width, canvas.height);
-
-        await page.render({ canvasContext: context, viewport }).promise;
-        images.push(canvas.toDataURL('image/png'));
-      }
-      
-      reset({ ...watch(), appendixImages: [...(watch('appendixImages') || []), ...images] });
-    } catch (err) {
-      console.error("Error parsing PDF", err);
-      alert('שגיאה בטעינת קובץ PDF');
+  const handleMergePdfs = async () => {
+    if (!resumeFile || !appendixFile) {
+      alert('יש לבחור שני קבצים');
+      return;
     }
-    // Clear input so user can add the same file again if they deleted it
-    e.target.value = '';
+    
+    setIsMerging(true);
+    try {
+      const resumeBytes = await resumeFile.arrayBuffer();
+      const appendixBytes = await appendixFile.arrayBuffer();
+      
+      const mergedPdf = await PDFDocument.create();
+      
+      const resumeDoc = await PDFDocument.load(resumeBytes);
+      const copiedResumePages = await mergedPdf.copyPages(resumeDoc, resumeDoc.getPageIndices());
+      copiedResumePages.forEach((page) => mergedPdf.addPage(page));
+      
+      const appendixDoc = await PDFDocument.load(appendixBytes);
+      const copiedAppendixPages = await mergedPdf.copyPages(appendixDoc, appendixDoc.getPageIndices());
+      copiedAppendixPages.forEach((page) => mergedPdf.addPage(page));
+      
+      const mergedPdfFile = await mergedPdf.save();
+      const blob = new Blob([mergedPdfFile], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'merged_resume_and_grades.pdf';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      setShowMergeModal(false);
+      setResumeFile(null);
+      setAppendixFile(null);
+    } catch (err) {
+      console.error(err);
+      alert('אירעה שגיאה במיזוג הקבצים. ייתכן שאחד הקבצים פגום.');
+    } finally {
+      setIsMerging(false);
+    }
   };
 
   return (
@@ -88,6 +97,9 @@ export default function App() {
             </button>
             <button type="button" onClick={() => setConfirmAction('reset')} className="bg-red-50 text-red-600 px-3 py-2 rounded-lg hover:bg-red-100 transition text-sm font-medium whitespace-nowrap" title="טען את קורות החיים של ירדן (לדוגמה)">
               טען דוגמא
+            </button>
+            <button type="button" onClick={() => setShowMergeModal(true)} className="bg-green-600 text-white px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-green-700 transition">
+              <span className="hidden sm:inline whitespace-nowrap text-sm font-medium">מזג נספחים ל-PDF</span>
             </button>
             <button onClick={() => handlePrint()} className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition">
               <Printer size={20} />
@@ -501,25 +513,7 @@ export default function App() {
               </div>
             </section>
 
-            {/* Appendix */}
-            <section className="col-span-1 md:col-span-2">
-              <div className="flex justify-between items-center mb-4 border-b pb-2">
-                <h2 className="text-lg font-semibold text-gray-700">נספחים (גיליון ציונים)</h2>
-              </div>
-              <div className="space-y-4">
-                <label className="cursor-pointer flex items-center justify-center gap-2 w-full border-2 border-dashed border-gray-300 rounded-lg p-6 hover:bg-gray-50 transition text-gray-600">
-                  <Upload size={24} />
-                  <span>העלה גיליון ציונים (PDF)</span>
-                  <input type="file" accept=".pdf" className="hidden" onChange={handlePdfUpload} />
-                </label>
-                {resumeData.appendixImages && resumeData.appendixImages.length > 0 && (
-                  <div className="flex flex-col gap-2">
-                    <p className="text-sm font-medium text-green-600">נטענו {resumeData.appendixImages.length} עמודי נספח.</p>
-                    <button type="button" onClick={() => reset({ ...watch(), appendixImages: [] })} className="text-sm text-red-500 hover:underline inline-block w-fit">מחק נספחים</button>
-                  </div>
-                )}
-              </div>
-            </section>
+
           </div>
         </form>
       </div>
@@ -531,12 +525,6 @@ export default function App() {
             {resumeData.template === 'classic' && <ClassicTemplate data={resumeData} />}
             {resumeData.template === 'modern' && <ModernTemplate data={resumeData} />}
             {resumeData.template === 'minimalist' && <MinimalistTemplate data={resumeData} />}
-            
-            {resumeData.appendixImages?.map((img, i) => (
-              <div key={`appendix-${i}`} className="print:block print:w-[210mm] print:h-[297mm] print:m-0 print:p-0 break-before-page w-[210mm] min-h-[297mm] flex flex-col items-center justify-center bg-white mt-4 print:mt-0 shadow-2xl print:shadow-none">
-                <img src={img} alt={`Appendix Page ${i+1}`} className="max-w-[210mm] max-h-[297mm] object-contain" />
-              </div>
-            ))}
           </div>
         </div>
       </div>
@@ -564,6 +552,41 @@ export default function App() {
                 className="px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium shadow-sm"
               >
                 כן, אני בטוח
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showMergeModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] no-print">
+          <div className="bg-white p-6 rounded-xl shadow-xl max-w-sm w-full border border-gray-100 m-4" dir="rtl">
+            <h3 className="text-xl font-bold mb-3 text-gray-800">מזג קבצי PDF</h3>
+            <p className="text-gray-600 mb-6 text-sm leading-relaxed">
+              שלב 1: לחץ מסביב על "הורד PDF" לשמירת קורות החיים שלך.
+              <br/>
+              שלב 2: העלה את הקובץ שהורדת ואת גליון הציונים שלך כאן למטה - והם ימוזגו לקובץ אחד מושלם שומר-טקסט!
+            </p>
+            <div className="space-y-4 mb-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">1. קובץ קורות החיים שהורדת</label>
+                <input type="file" accept=".pdf" onChange={(e) => setResumeFile(e.target.files?.[0] || null)} className="w-full text-sm text-gray-600 border rounded-lg p-2" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">2. קובץ נספח/ציונים</label>
+                <input type="file" accept=".pdf" onChange={(e) => setAppendixFile(e.target.files?.[0] || null)} className="w-full text-sm text-gray-600 border rounded-lg p-2" />
+              </div>
+            </div>
+            
+            <div className="flex justify-end gap-3">
+              <button type="button" onClick={() => setShowMergeModal(false)} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition font-medium">ביטול</button>
+              <button 
+                type="button"
+                onClick={handleMergePdfs} 
+                disabled={isMerging || !resumeFile || !appendixFile}
+                className="px-4 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium shadow-sm disabled:opacity-50"
+              >
+                {isMerging ? 'ממזג...' : 'מזג והורד'}
               </button>
             </div>
           </div>

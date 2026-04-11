@@ -20,7 +20,6 @@ export type ResumeData = {
   languages: Array<{ id: string; name: string }>;
   links: Array<{ id: string; name: string; url: string }>;
   projects: Array<{ id: string; name: string; description: string }>;
-  appendixImages?: string[];
 };
 
 export const initialResumeData: ResumeData = {
@@ -106,8 +105,7 @@ export const initialResumeData: ResumeData = {
       name: "פרויקט 3: הליכון מסייע חכם (IoT)",
       description: "מערכת IoT לשיפור יציבות ושיווי משקל. פיתוח על פלטפורמת M5Stack ב-MicroPython לקריאת חיישני לחץ ומתן פידבק למשתמש בזמן אמת.",
     }
-  ],
-  appendixImages: [],
+  ]
 };
 
 export const emptyResumeData: ResumeData = {
@@ -132,5 +130,4 @@ export const emptyResumeData: ResumeData = {
   languages: [],
   links: [],
   projects: [],
-  appendixImages: [],
 };

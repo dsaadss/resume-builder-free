@@ -7,6 +7,7 @@ import * as pdfjsLib from 'pdfjs-dist';
 pdfjsLib.GlobalWorkerOptions.workerSrc = '//unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
 import { ResumeData, initialResumeData, emptyResumeData } from './types';
 import { ClassicTemplate, ModernTemplate, MinimalistTemplate } from './templates';
+import { getFakeDataProfiles } from './fakeData';
 
 const loadSavedData = (): ResumeData => {
   if (typeof window === 'undefined') return initialResumeData;
@@ -46,8 +47,8 @@ const DraggableImagePreview = ({ img, onChange }: { img: ProfileImageInfo, onCha
     const ratio = 100 / (128 * scaleFactor);
     
     // Smoothly update positions without strictly jumping back if over-dragged, bounded by 0-100 like the range inputs
-    const newX = Math.min(100, Math.max(0, img.posX + deltaX * ratio));
-    const newY = Math.min(100, Math.max(0, img.posY + deltaY * ratio));
+    const newX = Math.round(Math.min(100, Math.max(0, img.posX + deltaX * ratio)));
+    const newY = Math.round(Math.min(100, Math.max(0, img.posY + deltaY * ratio)));
     
     onChange({ ...img, posX: newX, posY: newY });
     setStartPos({ x: e.clientX, y: e.clientY });
@@ -73,8 +74,9 @@ const DraggableImagePreview = ({ img, onChange }: { img: ProfileImageInfo, onCha
 
 export default function App() {
   const [confirmAction, setConfirmAction] = useState<'clear' | 'reset' | null>(null);
+  const [fakeIndex, setFakeIndex] = useState(0);
   const [formWidth, setFormWidth] = useState(50);
-  const { register, control, handleSubmit, reset, watch } = useForm<ResumeData>({
+  const { register, control, handleSubmit, reset, watch, setValue } = useForm<ResumeData>({
     defaultValues: loadSavedData(),
   });
   
@@ -115,8 +117,13 @@ export default function App() {
       </div>
       <div className="flex items-center gap-2 text-xs text-gray-500 bg-gray-50 p-1.5 rounded-lg w-fit mt-1 border border-gray-100">
         <span className="font-medium text-gray-600">ריווח עליון: צפוף</span>
-        <input type="range" min="0" max="16" defaultValue={8} {...register(`settings.sectionPadding.${sectionId}`, { valueAsNumber: true })} className="w-24 accent-blue-600" />
-        <span className="font-medium text-gray-600">מרווח</span>
+        <input 
+          type="range" min="0" max="32" 
+          value={watch(`settings.sectionPadding.${sectionId}`) ?? 8}
+          onChange={(e) => setValue(`settings.sectionPadding.${sectionId}`, parseInt(e.target.value))}
+          className="w-24 accent-blue-600 cursor-pointer" 
+        />
+        <span className="font-medium text-gray-600">מרווח ({watch(`settings.sectionPadding.${sectionId}`) ?? 8})</span>
       </div>
     </div>
   );
@@ -169,16 +176,34 @@ export default function App() {
         className="w-full shrink-0 p-6 overflow-y-auto h-screen bg-white shadow-lg z-10 no-print"
         style={{ width: typeof window !== 'undefined' && window.innerWidth >= 768 ? `${formWidth}%` : '100%' }}
       >
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-800 shrink-0">בונה קורות חיים</h1>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 bg-gray-50 p-4 rounded-xl border border-gray-200">
+          <div className="flex flex-col gap-1">
+            <h1 className="text-3xl font-bold text-gray-800 shrink-0">בונה קורות חיים</h1>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">טען נתוני בדיקה:</span>
+              <div className="flex gap-1.5">
+                {[1, 2, 3].map(i => (
+                  <button 
+                    key={i}
+                    type="button" 
+                    onClick={() => reset(getFakeDataProfiles()[i-1])}
+                    className="w-7 h-7 flex items-center justify-center bg-white border border-gray-300 rounded-md text-xs font-bold text-gray-600 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition shadow-sm"
+                    title={`טען פרופיל דוגמא ${i}`}
+                  >
+                    {i}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
           <div className="flex gap-2">
-            <button type="button" onClick={() => setConfirmAction('clear')} className="bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 transition text-sm font-medium whitespace-nowrap">
+            <button type="button" onClick={() => setConfirmAction('clear')} className="bg-white text-gray-700 border border-gray-300 px-3 py-2 rounded-lg hover:bg-gray-50 transition text-sm font-medium whitespace-nowrap shadow-sm">
               נקה טופס
             </button>
             <button type="button" onClick={() => setConfirmAction('reset')} className="bg-red-50 text-red-600 px-3 py-2 rounded-lg hover:bg-red-100 transition text-sm font-medium whitespace-nowrap" title="טען את קורות החיים של ירדן (לדוגמה)">
               טען דוגמא
             </button>
-            <button onClick={() => handlePrint()} className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition">
+            <button onClick={() => handlePrint()} className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition shadow-md">
               <Printer size={20} />
               <span className="hidden sm:inline whitespace-nowrap">הורד PDF</span>
             </button>
@@ -226,11 +251,19 @@ export default function App() {
             <h2 className="text-xl font-semibold mb-4 text-gray-700 border-b pb-2">הגדרות מתקדמות</h2>
             <div className="grid grid-cols-1 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">ריווח שוליים כללי (Padding)</label>
+                <label className="flex justify-between text-sm font-medium text-gray-600 mb-1">
+                  <span>ריווח שוליים כללי (Padding)</span>
+                  <span className="font-mono text-blue-600 font-bold">{resumeData.settings.padding}px</span>
+                </label>
                 <div className="flex items-center gap-3">
-                  <span className="text-xs text-gray-500 font-medium">צפוף</span>
-                  <input type="range" min="0" max="16" {...register('settings.padding', { valueAsNumber: true })} className="flex-1 accent-blue-600" />
-                  <span className="text-xs text-gray-500 font-medium">מרווח</span>
+                  <span className="text-xs text-gray-500 font-medium whitespace-nowrap">צפוף</span>
+                  <input 
+                    type="range" min="0" max="32" 
+                    value={resumeData.settings.padding} 
+                    onChange={(e) => setValue('settings.padding', parseInt(e.target.value))}
+                    className="flex-1 accent-blue-600 cursor-pointer" 
+                  />
+                  <span className="text-xs text-gray-500 font-medium whitespace-nowrap">מרווח</span>
                 </div>
               </div>
             </div>
@@ -306,7 +339,8 @@ export default function App() {
                         const newImages = resumeData.personal.profileImages.map(img => 
                           img.id === resumeData.personal.activeProfileImageId ? newImg : img
                         );
-                        reset({ ...watch(), personal: { ...watch('personal'), profileImages: newImages } });
+                        // Use setValue for much smoother updates during dragging
+                        setValue('personal.profileImages', newImages);
                       }}
                     />
 
@@ -317,14 +351,26 @@ export default function App() {
                           type="range" min="0" max="100" 
                           value={resumeData.personal.profileImages.find(i => i.id === resumeData.personal.activeProfileImageId)?.posX || 50}
                           onChange={(e) => {
+                            const val = parseInt(e.target.value);
                             const newImages = resumeData.personal.profileImages.map(img => 
-                              img.id === resumeData.personal.activeProfileImageId ? { ...img, posX: parseInt(e.target.value) } : img
+                              img.id === resumeData.personal.activeProfileImageId ? { ...img, posX: val } : img
                             );
-                            reset({ ...watch(), personal: { ...watch('personal'), profileImages: newImages } });
+                            setValue('personal.profileImages', newImages);
                           }}
                           className="flex-1 cursor-ew-resize accent-blue-600"
                         />
-                        <span className="text-[10px] w-6 text-gray-400 font-mono text-left">{resumeData.personal.profileImages.find(i => i.id === resumeData.personal.activeProfileImageId)?.posX || 50}</span>
+                        <input 
+                          type="number" min="0" max="100"
+                          value={resumeData.personal.profileImages.find(i => i.id === resumeData.personal.activeProfileImageId)?.posX || 50}
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value) || 0;
+                            const newImages = resumeData.personal.profileImages.map(img => 
+                              img.id === resumeData.personal.activeProfileImageId ? { ...img, posX: val } : img
+                            );
+                            setValue('personal.profileImages', newImages);
+                          }}
+                          className="w-12 text-[11px] border rounded p-0.5 text-center font-mono focus:border-blue-500 focus:outline-none"
+                        />
                       </div>
                       <div className="flex items-center gap-3">
                         <span className="text-xs font-medium text-gray-500 w-16">אנכי (Y)</span>
@@ -332,14 +378,26 @@ export default function App() {
                           type="range" min="0" max="100" 
                           value={resumeData.personal.profileImages.find(i => i.id === resumeData.personal.activeProfileImageId)?.posY || 50}
                           onChange={(e) => {
+                            const val = parseInt(e.target.value);
                             const newImages = resumeData.personal.profileImages.map(img => 
-                              img.id === resumeData.personal.activeProfileImageId ? { ...img, posY: parseInt(e.target.value) } : img
+                              img.id === resumeData.personal.activeProfileImageId ? { ...img, posY: val } : img
                             );
-                            reset({ ...watch(), personal: { ...watch('personal'), profileImages: newImages } });
+                            setValue('personal.profileImages', newImages);
                           }}
                           className="flex-1 cursor-ew-resize accent-blue-600"
                         />
-                        <span className="text-[10px] w-6 text-gray-400 font-mono text-left">{resumeData.personal.profileImages.find(i => i.id === resumeData.personal.activeProfileImageId)?.posY || 50}</span>
+                        <input 
+                          type="number" min="0" max="100"
+                          value={resumeData.personal.profileImages.find(i => i.id === resumeData.personal.activeProfileImageId)?.posY || 50}
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value) || 0;
+                            const newImages = resumeData.personal.profileImages.map(img => 
+                              img.id === resumeData.personal.activeProfileImageId ? { ...img, posY: val } : img
+                            );
+                            setValue('personal.profileImages', newImages);
+                          }}
+                          className="w-12 text-[11px] border rounded p-0.5 text-center font-mono focus:border-blue-500 focus:outline-none"
+                        />
                       </div>
                       <div className="flex items-center gap-3">
                         <span className="text-xs font-medium text-gray-500 w-16">סיבוב</span>
@@ -347,14 +405,26 @@ export default function App() {
                           type="range" min="-180" max="180" 
                           value={resumeData.personal.profileImages.find(i => i.id === resumeData.personal.activeProfileImageId)?.rotate || 0}
                           onChange={(e) => {
+                            const val = parseInt(e.target.value);
                             const newImages = resumeData.personal.profileImages.map(img => 
-                              img.id === resumeData.personal.activeProfileImageId ? { ...img, rotate: parseInt(e.target.value) } : img
+                              img.id === resumeData.personal.activeProfileImageId ? { ...img, rotate: val } : img
                             );
-                            reset({ ...watch(), personal: { ...watch('personal'), profileImages: newImages } });
+                            setValue('personal.profileImages', newImages);
                           }}
                           className="flex-1 cursor-ew-resize accent-blue-600"
                         />
-                        <span className="text-[10px] w-6 text-gray-400 font-mono text-left">{resumeData.personal.profileImages.find(i => i.id === resumeData.personal.activeProfileImageId)?.rotate || 0}°</span>
+                        <input 
+                          type="number" min="-180" max="180"
+                          value={resumeData.personal.profileImages.find(i => i.id === resumeData.personal.activeProfileImageId)?.rotate || 0}
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value) || 0;
+                            const newImages = resumeData.personal.profileImages.map(img => 
+                              img.id === resumeData.personal.activeProfileImageId ? { ...img, rotate: val } : img
+                            );
+                            setValue('personal.profileImages', newImages);
+                          }}
+                          className="w-12 text-[11px] border rounded p-0.5 text-center font-mono focus:border-blue-500 focus:outline-none"
+                        />
                       </div>
                       <div className="flex items-center gap-3">
                         <span className="text-xs font-medium text-gray-500 w-16">זום</span>
@@ -362,14 +432,26 @@ export default function App() {
                           type="range" min="10" max="400" 
                           value={resumeData.personal.profileImages.find(i => i.id === resumeData.personal.activeProfileImageId)?.scale || 100}
                           onChange={(e) => {
+                            const val = parseInt(e.target.value);
                             const newImages = resumeData.personal.profileImages.map(img => 
-                              img.id === resumeData.personal.activeProfileImageId ? { ...img, scale: parseInt(e.target.value) } : img
+                              img.id === resumeData.personal.activeProfileImageId ? { ...img, scale: val } : img
                             );
-                            reset({ ...watch(), personal: { ...watch('personal'), profileImages: newImages } });
+                            setValue('personal.profileImages', newImages);
                           }}
                           className="flex-1 cursor-ew-resize accent-blue-600"
                         />
-                        <span className="text-[10px] w-6 text-gray-400 font-mono text-left">{resumeData.personal.profileImages.find(i => i.id === resumeData.personal.activeProfileImageId)?.scale || 100}%</span>
+                        <input 
+                          type="number" min="10" max="400"
+                          value={resumeData.personal.profileImages.find(i => i.id === resumeData.personal.activeProfileImageId)?.scale || 100}
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value) || 100;
+                            const newImages = resumeData.personal.profileImages.map(img => 
+                              img.id === resumeData.personal.activeProfileImageId ? { ...img, scale: val } : img
+                            );
+                            setValue('personal.profileImages', newImages);
+                          }}
+                          className="w-12 text-[11px] border rounded p-0.5 text-center font-mono focus:border-blue-500 focus:outline-none"
+                        />
                       </div>
                     </div>
                   </div>

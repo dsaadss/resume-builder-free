@@ -27,6 +27,50 @@ const loadSavedData = (): ResumeData => {
   return initialResumeData;
 };
 
+const DraggableImagePreview = ({ img, onChange }: { img: ProfileImageInfo, onChange: (newImg: ProfileImageInfo) => void }) => {
+  const [isDragging, setIsDragging] = useState(false);
+  const [startPos, setStartPos] = useState({ x: 0, y: 0 });
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    setIsDragging(true);
+    setStartPos({ x: e.clientX, y: e.clientY });
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!isDragging) return;
+    const deltaX = e.clientX - startPos.x;
+    const deltaY = e.clientY - startPos.y;
+    
+    const scaleFactor = (img.scale && img.scale > 0 ? img.scale / 100 : 1);
+    const ratio = 100 / (128 * scaleFactor);
+    
+    // Smoothly update positions without strictly jumping back if over-dragged, bounded by 0-100 like the range inputs
+    const newX = Math.min(100, Math.max(0, img.posX + deltaX * ratio));
+    const newY = Math.min(100, Math.max(0, img.posY + deltaY * ratio));
+    
+    onChange({ ...img, posX: newX, posY: newY });
+    setStartPos({ x: e.clientX, y: e.clientY });
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    e.currentTarget.releasePointerCapture(e.pointerId);
+    setIsDragging(false);
+  };
+
+  return (
+    <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-blue-400 shadow-md bg-white relative cursor-move mx-auto mb-4 touch-none"
+         onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerCancel={handlePointerUp}>
+      <img src={img.dataUrl} className="w-full h-full object-cover select-none pointer-events-none" 
+           style={{ transform: `translate(${(img.posX - 50)}%, ${(img.posY - 50)}%) scale(${img.scale && img.scale > 0 ? (img.scale / 100) : 1}) rotate(${img.rotate || 0}deg)` }} 
+           alt="Interactive Preview" />
+      <div className="absolute inset-x-0 bottom-0 bg-black/40 text-black/90 pb-2 pt-1 font-bold pointer-events-none">
+        <div className="text-center text-white text-[10px]">גרור לתזוזה</div>
+      </div>
+    </div>
+  );
+};
+
 export default function App() {
   const [confirmAction, setConfirmAction] = useState<'clear' | 'reset' | null>(null);
   const [formWidth, setFormWidth] = useState(50);
@@ -254,7 +298,18 @@ export default function App() {
                 
                 {resumeData.personal.activeProfileImageId && (
                   <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm mt-2">
-                    <h4 className="text-xs font-semibold text-gray-600 mb-3">הזז תמונה להתאמה מושלמת למסגרת:</h4>
+                    <h4 className="text-xs font-semibold text-gray-600 mb-3 text-center">התאמת תמונה - גרור בתוך העיגול או השתמש במחוונים:</h4>
+                    
+                    <DraggableImagePreview 
+                      img={resumeData.personal.profileImages.find(i => i.id === resumeData.personal.activeProfileImageId)!}
+                      onChange={(newImg) => {
+                        const newImages = resumeData.personal.profileImages.map(img => 
+                          img.id === resumeData.personal.activeProfileImageId ? newImg : img
+                        );
+                        reset({ ...watch(), personal: { ...watch('personal'), profileImages: newImages } });
+                      }}
+                    />
+
                     <div className="flex flex-col gap-3">
                       <div className="flex items-center gap-3">
                         <span className="text-xs font-medium text-gray-500 w-16">אופקי (X)</span>
@@ -269,6 +324,7 @@ export default function App() {
                           }}
                           className="flex-1 cursor-ew-resize accent-blue-600"
                         />
+                        <span className="text-[10px] w-6 text-gray-400 font-mono text-left">{resumeData.personal.profileImages.find(i => i.id === resumeData.personal.activeProfileImageId)?.posX || 50}</span>
                       </div>
                       <div className="flex items-center gap-3">
                         <span className="text-xs font-medium text-gray-500 w-16">אנכי (Y)</span>
@@ -283,9 +339,10 @@ export default function App() {
                           }}
                           className="flex-1 cursor-ew-resize accent-blue-600"
                         />
+                        <span className="text-[10px] w-6 text-gray-400 font-mono text-left">{resumeData.personal.profileImages.find(i => i.id === resumeData.personal.activeProfileImageId)?.posY || 50}</span>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="text-xs font-medium text-gray-500 w-16">סיבוב (Rotate)</span>
+                        <span className="text-xs font-medium text-gray-500 w-16">סיבוב</span>
                         <input 
                           type="range" min="-180" max="180" 
                           value={resumeData.personal.profileImages.find(i => i.id === resumeData.personal.activeProfileImageId)?.rotate || 0}
@@ -297,11 +354,12 @@ export default function App() {
                           }}
                           className="flex-1 cursor-ew-resize accent-blue-600"
                         />
+                        <span className="text-[10px] w-6 text-gray-400 font-mono text-left">{resumeData.personal.profileImages.find(i => i.id === resumeData.personal.activeProfileImageId)?.rotate || 0}°</span>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="text-xs font-medium text-gray-500 w-16">זום (Scale)</span>
+                        <span className="text-xs font-medium text-gray-500 w-16">זום</span>
                         <input 
-                          type="range" min="100" max="300" 
+                          type="range" min="10" max="400" 
                           value={resumeData.personal.profileImages.find(i => i.id === resumeData.personal.activeProfileImageId)?.scale || 100}
                           onChange={(e) => {
                             const newImages = resumeData.personal.profileImages.map(img => 
@@ -311,6 +369,7 @@ export default function App() {
                           }}
                           className="flex-1 cursor-ew-resize accent-blue-600"
                         />
+                        <span className="text-[10px] w-6 text-gray-400 font-mono text-left">{resumeData.personal.profileImages.find(i => i.id === resumeData.personal.activeProfileImageId)?.scale || 100}%</span>
                       </div>
                     </div>
                   </div>

@@ -7,10 +7,12 @@ interface SkyToggleProps {
 }
 
 const SkyToggle: React.FC<SkyToggleProps> = ({ checked, onChange }) => {
+  const id = React.useId();
   return (
     <StyledWrapper>
-      <label className="theme-switch">
+      <label className="theme-switch" htmlFor={id}>
         <input 
+          id={id}
           type="checkbox" 
           className="theme-switch__checkbox" 
           checked={checked}

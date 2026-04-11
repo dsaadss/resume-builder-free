@@ -236,7 +236,7 @@ export default function App() {
         className="w-full shrink-0 p-6 overflow-y-auto h-screen bg-white dark:bg-slate-950 shadow-2xl z-10 no-print border-l border-slate-200 dark:border-slate-900 transition-colors duration-300"
         style={{ width: typeof window !== 'undefined' && window.innerWidth >= 768 ? `${formWidth}%` : '100%' }}
       >
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 bg-slate-50 dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden group">
+        <div className="sticky top-0 z-[60] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 bg-white/95 dark:bg-slate-950/95 backdrop-blur-md p-6 rounded-b-[2.5rem] -mx-6 -mt-6 border-b border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full -translate-y-16 translate-x-16 group-hover:scale-110 transition-transform"></div>
           <div className="flex flex-col gap-1.5 relative z-10">
             <h1 className="text-3xl font-black text-slate-800 dark:text-white shrink-0 tracking-tight">בונה קורות חיים</h1>

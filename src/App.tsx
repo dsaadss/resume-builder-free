@@ -13,7 +13,13 @@ const loadSavedData = (): ResumeData => {
   const saved = localStorage.getItem('resumeData');
   if (saved) {
     try {
-      return JSON.parse(saved) as ResumeData;
+      const parsed = JSON.parse(saved);
+      return {
+        ...initialResumeData,
+        ...parsed,
+        settings: { ...initialResumeData.settings, ...(parsed.settings || {}) },
+        personal: { ...initialResumeData.personal, ...(parsed.personal || {}) },
+      };
     } catch(e) {
       return initialResumeData;
     }
@@ -23,6 +29,7 @@ const loadSavedData = (): ResumeData => {
 
 export default function App() {
   const [confirmAction, setConfirmAction] = useState<'clear' | 'reset' | null>(null);
+  const [formWidth, setFormWidth] = useState(50);
   const { register, control, handleSubmit, reset, watch } = useForm<ResumeData>({
     defaultValues: loadSavedData(),
   });
@@ -34,6 +41,30 @@ export default function App() {
     document.title = `Resume_${resumeData.personal.firstName}_${resumeData.personal.lastName}`;
     localStorage.setItem('resumeData', JSON.stringify(resumeData));
   }, [resumeData]);
+
+  const moveOrder = (key: 'mainOrder' | 'sidebarOrder', id: string, dir: number) => {
+    const list = [...(resumeData.settings[key] || [])];
+    const idx = list.indexOf(id);
+    if (idx < 0) return;
+    const newIdx = idx + dir;
+    if (newIdx < 0 || newIdx >= list.length) return;
+    [list[idx], list[newIdx]] = [list[newIdx], list[idx]];
+    reset({ ...resumeData, settings: { ...resumeData.settings, [key]: list } });
+  };
+
+  const FormSectionHeader = ({ title, orderKey, sectionId, size = 'xl', children }: { title: string, orderKey: 'mainOrder' | 'sidebarOrder', sectionId: string, size?: 'lg' | 'xl', children?: React.ReactNode }) => (
+    <div className="flex justify-between items-center mb-4 border-b pb-2">
+      <div className="flex items-center gap-3">
+        <h2 className={`text-${size} font-semibold text-gray-700`}>{title}</h2>
+        <div className="flex bg-gray-100 rounded-md overflow-hidden border border-gray-200" dir="ltr">
+          <button type="button" onClick={() => moveOrder(orderKey, sectionId, -1)} className="px-1.5 py-0.5 hover:bg-gray-200 text-gray-600 hover:text-black transition text-xs font-bold" title="הזז למעלה ב-PDF">↑</button>
+          <div className="w-px bg-gray-300"></div>
+          <button type="button" onClick={() => moveOrder(orderKey, sectionId, 1)} className="px-1.5 py-0.5 hover:bg-gray-200 text-gray-600 hover:text-black transition text-xs font-bold" title="הזז למטה ב-PDF">↓</button>
+        </div>
+      </div>
+      {children}
+    </div>
+  );
 
   const handlePrint = () => {
     window.print();
@@ -79,7 +110,10 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col md:flex-row print:block print:bg-white" dir="rtl">
       {/* Form Section (Right) */}
-      <div className="w-full md:w-1/2 p-6 overflow-y-auto h-screen bg-white shadow-lg z-10 no-print">
+      <div 
+        className="w-full shrink-0 p-6 overflow-y-auto h-screen bg-white shadow-lg z-10 no-print"
+        style={{ width: typeof window !== 'undefined' && window.innerWidth >= 768 ? `${formWidth}%` : '100%' }}
+      >
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-800 shrink-0">בונה קורות חיים</h1>
           <div className="flex gap-2">
@@ -132,39 +166,119 @@ export default function App() {
             </div>
           </section>
 
+          {/* Advanced Layout Settings */}
+          <section>
+            <h2 className="text-xl font-semibold mb-4 text-gray-700 border-b pb-2">הגדרות מתקדמות</h2>
+            <div className="grid grid-cols-1 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">ריווח כללי במסמך (Padding)</label>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-gray-400">צפוף</span>
+                  <input type="range" min="0" max="16" {...register('settings.padding', { valueAsNumber: true })} className="flex-1 accent-blue-600" />
+                  <span className="text-xs text-gray-400">מרווח</span>
+                </div>
+              </div>
+              
+              <div className="mt-2 bg-gray-50 border rounded-lg p-3">
+                <label className="block text-sm font-bold text-gray-700 mb-2">שינוי שמות כותרות (השאר ריק לברירת מחדל)</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <input {...register('settings.headlines.skills')} placeholder="מיומנויות (ברירת מחדל)" className="border rounded p-1.5 text-xs focus:ring-1 focus:ring-blue-500 outline-none" />
+                  <input {...register('settings.headlines.experience')} placeholder="ניסיון תעסוקתי (ברירת מחדל)" className="border rounded p-1.5 text-xs focus:ring-1 focus:ring-blue-500 outline-none" />
+                  <input {...register('settings.headlines.education')} placeholder="השכלה (ברירת מחדל)" className="border rounded p-1.5 text-xs focus:ring-1 focus:ring-blue-500 outline-none" />
+                  <input {...register('settings.headlines.courses')} placeholder="קורסים (ברירת מחדל)" className="border rounded p-1.5 text-xs focus:ring-1 focus:ring-blue-500 outline-none" />
+                  <input {...register('settings.headlines.military')} placeholder="שירות צבאי (ברירת מחדל)" className="border rounded p-1.5 text-xs focus:ring-1 focus:ring-blue-500 outline-none" />
+                  <input {...register('settings.headlines.projects')} placeholder="פרוייקטים (ברירת מחדל)" className="border rounded p-1.5 text-xs focus:ring-1 focus:ring-blue-500 outline-none" />
+                  <input {...register('settings.headlines.languages')} placeholder="שפות (ברירת מחדל)" className="border rounded p-1.5 text-xs focus:ring-1 focus:ring-blue-500 outline-none" />
+                  <input {...register('settings.headlines.links')} placeholder="קישורים (ברירת מחדל)" className="border rounded p-1.5 text-xs focus:ring-1 focus:ring-blue-500 outline-none" />
+                </div>
+              </div>
+            </div>
+          </section>
+
           {/* Personal Details */}
           <section>
             <h2 className="text-xl font-semibold mb-4 text-gray-700 border-b pb-2">פרטים אישיים</h2>
             <div className="grid grid-cols-2 gap-4">
-              <div className="col-span-2 mb-2">
-                <label className="block text-sm font-medium text-gray-600 mb-2">תמונת פרופיל</label>
-                <div className="flex items-center gap-4">
-                  {resumeData.personal.profileImage ? (
-                    <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-gray-200">
-                      <img src={resumeData.personal.profileImage} alt="Profile" className="w-full h-full object-cover" />
-                      <button type="button" onClick={() => reset({ ...watch(), personal: { ...watch('personal'), profileImage: '' } })} className="absolute inset-0 bg-black/50 flex items-center justify-center text-white opacity-0 hover:opacity-100 transition">
+              <div className="col-span-2 mb-2 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                <label className="block text-sm font-bold text-gray-700 mb-3">גלריית תלושי/תמונות פרופיל</label>
+                
+                <div className="flex flex-wrap gap-3 mb-4">
+                  {resumeData.personal.profileImages?.map(img => (
+                    <div 
+                      key={img.id} 
+                      onClick={() => reset({ ...watch(), personal: { ...watch('personal'), activeProfileImageId: img.id } })}
+                      className={`relative w-16 h-16 rounded-full overflow-hidden cursor-pointer border-4 transition-all ${resumeData.personal.activeProfileImageId === img.id ? 'border-blue-500 shadow-md scale-110' : 'border-transparent hover:border-blue-300'}`}
+                    >
+                      <img src={img.dataUrl} alt="Profile" className="w-full h-full object-cover" style={{ objectPosition: `${img.posX}% ${img.posY}%` }} />
+                      <button 
+                        type="button" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const newImages = resumeData.personal.profileImages.filter(i => i.id !== img.id);
+                          const newActiveId = newImages.length > 0 ? newImages[0].id : undefined;
+                          reset({ ...watch(), personal: { ...watch('personal'), profileImages: newImages, activeProfileImageId: newActiveId } });
+                        }} 
+                        className="absolute inset-0 bg-black/60 flex items-center justify-center text-white opacity-0 hover:opacity-100 transition"
+                      >
                         <Trash2 size={16} />
                       </button>
                     </div>
-                  ) : (
-                    <div className="w-16 h-16 rounded-full bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400">
-                      <Upload size={20} />
-                    </div>
-                  )}
-                  <label className="cursor-pointer bg-white border border-gray-300 text-gray-700 px-3 py-1.5 rounded-md text-sm hover:bg-gray-50 transition">
-                    בחר תמונה
+                  ))}
+                  
+                  <label className="w-16 h-16 rounded-full bg-white border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-500 cursor-pointer hover:bg-blue-50 hover:border-blue-300 hover:text-blue-500 transition shadow-sm" title="הוסף תמונה חדשה">
+                    <Plus size={24} />
                     <input type="file" className="hidden" accept="image/*" onChange={(e) => {
                       const file = e.target.files?.[0];
                       if (file) {
                         const reader = new FileReader();
                         reader.onloadend = () => {
-                          reset({ ...watch(), personal: { ...watch('personal'), profileImage: reader.result as string } });
+                          const newId = uuidv4();
+                          const newImg = { id: newId, dataUrl: reader.result as string, posX: 50, posY: 50 };
+                          const currentImages = resumeData.personal.profileImages || [];
+                          reset({ ...watch(), personal: { ...watch('personal'), profileImages: [...currentImages, newImg], activeProfileImageId: newId } });
                         };
                         reader.readAsDataURL(file);
                       }
+                      e.target.value = '';
                     }} />
                   </label>
                 </div>
+                
+                {resumeData.personal.activeProfileImageId && (
+                  <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm mt-2">
+                    <h4 className="text-xs font-semibold text-gray-600 mb-3">הזז תמונה להתאמה מושלמת למסגרת:</h4>
+                    <div className="flex flex-col gap-3">
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs font-medium text-gray-500 w-16">אופקי (X)</span>
+                        <input 
+                          type="range" min="0" max="100" 
+                          value={resumeData.personal.profileImages.find(i => i.id === resumeData.personal.activeProfileImageId)?.posX || 50}
+                          onChange={(e) => {
+                            const newImages = resumeData.personal.profileImages.map(img => 
+                              img.id === resumeData.personal.activeProfileImageId ? { ...img, posX: parseInt(e.target.value) } : img
+                            );
+                            reset({ ...watch(), personal: { ...watch('personal'), profileImages: newImages } });
+                          }}
+                          className="flex-1 cursor-ew-resize accent-blue-600"
+                        />
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs font-medium text-gray-500 w-16">אנכי (Y)</span>
+                        <input 
+                          type="range" min="0" max="100" 
+                          value={resumeData.personal.profileImages.find(i => i.id === resumeData.personal.activeProfileImageId)?.posY || 50}
+                          onChange={(e) => {
+                            const newImages = resumeData.personal.profileImages.map(img => 
+                              img.id === resumeData.personal.activeProfileImageId ? { ...img, posY: parseInt(e.target.value) } : img
+                            );
+                            reset({ ...watch(), personal: { ...watch('personal'), profileImages: newImages } });
+                          }}
+                          className="flex-1 cursor-ew-resize accent-blue-600"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">שם פרטי</label>
@@ -199,21 +313,20 @@ export default function App() {
 
           {/* Summary */}
           <section>
-            <h2 className="text-xl font-semibold mb-4 text-gray-700 border-b pb-2">תקציר</h2>
+            <FormSectionHeader title="תקציר" orderKey="mainOrder" sectionId="summary" />
             <textarea {...register('summary')} rows={4} className="w-full border rounded-md p-2 focus:ring-2 focus:ring-blue-500 outline-none resize-none" placeholder="תיאור קצר המפרט את הניסיון המקצועי שלך..."></textarea>
           </section>
 
           {/* Experience */}
           <section>
-            <div className="flex justify-between items-center mb-4 border-b pb-2">
-              <h2 className="text-xl font-semibold text-gray-700">ניסיון תעסוקתי</h2>
+            <FormSectionHeader title="ניסיון תעסוקתי" orderKey="mainOrder" sectionId="experience">
               <button type="button" onClick={() => {
                 const current = watch('experience');
                 reset({ ...watch(), experience: [...current, { id: uuidv4(), role: '', company: '', dates: '', description: '' }] });
               }} className="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-sm">
                 <Plus size={16} /> הוסף ניסיון
               </button>
-            </div>
+            </FormSectionHeader>
             <div className="space-y-4">
               {resumeData.experience.map((exp, index) => (
                 <div key={exp.id} className="bg-gray-50 p-4 rounded-lg border relative group">
@@ -268,15 +381,14 @@ export default function App() {
 
           {/* Education */}
           <section>
-            <div className="flex justify-between items-center mb-4 border-b pb-2">
-              <h2 className="text-xl font-semibold text-gray-700">השכלה</h2>
+            <FormSectionHeader title="השכלה" orderKey="mainOrder" sectionId="education">
               <button type="button" onClick={() => {
                 const current = watch('education');
                 reset({ ...watch(), education: [...current, { id: uuidv4(), degree: '', institution: '', dates: '', gpa: '' }] });
               }} className="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-sm">
                 <Plus size={16} /> הוסף השכלה
               </button>
-            </div>
+            </FormSectionHeader>
             <div className="space-y-4">
               {resumeData.education.map((edu, index) => (
                 <div key={edu.id} className="bg-gray-50 p-4 rounded-lg border relative group">
@@ -331,15 +443,14 @@ export default function App() {
 
           {/* Courses */}
           <section>
-            <div className="flex justify-between items-center mb-4 border-b pb-2">
-              <h2 className="text-xl font-semibold text-gray-700">קורסים</h2>
+            <FormSectionHeader title="קורסים" orderKey="mainOrder" sectionId="courses">
               <button type="button" onClick={() => {
                 const current = watch('courses');
                 reset({ ...watch(), courses: [...current, { id: uuidv4(), name: '', grade: '' }] });
               }} className="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-sm">
                 <Plus size={16} /> הוסף קורס
               </button>
-            </div>
+            </FormSectionHeader>
             <div className="space-y-2">
               {resumeData.courses.map((course, index) => (
                 <div key={course.id} className="flex gap-2 items-center">
@@ -356,15 +467,14 @@ export default function App() {
 
           {/* Military */}
           <section>
-            <div className="flex justify-between items-center mb-4 border-b pb-2">
-              <h2 className="text-xl font-semibold text-gray-700">שירות צבאי</h2>
+            <FormSectionHeader title="שירות צבאי" orderKey="mainOrder" sectionId="military">
               <button type="button" onClick={() => {
                 const current = watch('military');
                 reset({ ...watch(), military: [...current, { id: uuidv4(), role: '', dates: '', description: '' }] });
               }} className="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-sm">
                 <Plus size={16} /> הוסף שירות צבאי
               </button>
-            </div>
+            </FormSectionHeader>
             <div className="space-y-4">
               {resumeData.military.map((mil, index) => (
                 <div key={mil.id} className="bg-gray-50 p-4 rounded-lg border relative group">
@@ -395,15 +505,14 @@ export default function App() {
 
           {/* Projects */}
           <section>
-            <div className="flex justify-between items-center mb-4 border-b pb-2">
-              <h2 className="text-xl font-semibold text-gray-700">פרוייקטים</h2>
+            <FormSectionHeader title="פרוייקטים" orderKey="mainOrder" sectionId="projects">
               <button type="button" onClick={() => {
                 const current = watch('projects');
                 reset({ ...watch(), projects: [...current, { id: uuidv4(), name: '', description: '' }] });
               }} className="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-sm">
                 <Plus size={16} /> הוסף פרוייקט
               </button>
-            </div>
+            </FormSectionHeader>
             <div className="space-y-4">
               {resumeData.projects.map((proj, index) => (
                 <div key={proj.id} className="bg-gray-50 p-4 rounded-lg border relative group">
@@ -430,15 +539,14 @@ export default function App() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Skills */}
             <section>
-              <div className="flex justify-between items-center mb-4 border-b pb-2">
-                <h2 className="text-lg font-semibold text-gray-700">מיומנויות</h2>
+              <FormSectionHeader title="מיומנויות" orderKey="sidebarOrder" sectionId="skills" size="lg">
                 <button type="button" onClick={() => {
                   const current = watch('skills');
                   reset({ ...watch(), skills: [...current, { id: uuidv4(), name: '' }] });
                 }} className="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-sm">
                   <Plus size={16} /> הוסף
                 </button>
-              </div>
+              </FormSectionHeader>
               <div className="space-y-2">
                 {resumeData.skills.map((skill, index) => (
                   <div key={skill.id} className="flex gap-2 items-center">
@@ -454,15 +562,14 @@ export default function App() {
 
             {/* Languages */}
             <section>
-              <div className="flex justify-between items-center mb-4 border-b pb-2">
-                <h2 className="text-lg font-semibold text-gray-700">שפות</h2>
+              <FormSectionHeader title="שפות" orderKey="sidebarOrder" sectionId="languages" size="lg">
                 <button type="button" onClick={() => {
                   const current = watch('languages');
                   reset({ ...watch(), languages: [...current, { id: uuidv4(), name: '' }] });
                 }} className="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-sm">
                   <Plus size={16} /> הוסף
                 </button>
-              </div>
+              </FormSectionHeader>
               <div className="space-y-2">
                 {resumeData.languages.map((lang, index) => (
                   <div key={lang.id} className="flex gap-2 items-center">
@@ -478,15 +585,14 @@ export default function App() {
 
             {/* Links */}
             <section className="col-span-1 md:col-span-2">
-              <div className="flex justify-between items-center mb-4 border-b pb-2">
-                <h2 className="text-lg font-semibold text-gray-700">קישורים</h2>
+              <FormSectionHeader title="קישורים" orderKey="sidebarOrder" sectionId="links" size="lg">
                 <button type="button" onClick={() => {
                   const current = watch('links');
                   reset({ ...watch(), links: [...current, { id: uuidv4(), name: '', url: '' }] });
                 }} className="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-sm">
                   <Plus size={16} /> הוסף קישור
                 </button>
-              </div>
+              </FormSectionHeader>
               <div className="space-y-2">
                 {resumeData.links.map((link, index) => (
                   <div key={link.id} className="flex gap-2 items-center">
@@ -524,8 +630,40 @@ export default function App() {
         </form>
       </div>
 
+      {/* Resizable Splitter */}
+      <div 
+        className="hidden md:flex flex-col items-center justify-center shrink-0 w-2 cursor-col-resize bg-gray-200 hover:bg-blue-400 active:bg-blue-600 transition group z-20"
+        onMouseDown={(e) => {
+          e.preventDefault();
+          const moveListener = (moveEvent: MouseEvent) => {
+            const windowWidth = window.innerWidth;
+            // In RTL, 0 is right. The Form is attached right.
+            // Form width is distance from right side: window.innerWidth - moveEvent.clientX
+            const newPercentage = ((windowWidth - moveEvent.clientX) / windowWidth) * 100;
+            if (newPercentage > 20 && newPercentage < 80) setFormWidth(newPercentage);
+          };
+          const upListener = () => {
+            document.removeEventListener('mousemove', moveListener);
+            document.removeEventListener('mouseup', upListener);
+            document.body.style.userSelect = '';
+          };
+          document.body.style.userSelect = 'none';
+          document.addEventListener('mousemove', moveListener);
+          document.addEventListener('mouseup', upListener);
+        }}
+      >
+        <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition">
+          <div className="w-1 h-1 rounded-full bg-white shadow-sm"></div>
+          <div className="w-1 h-1 rounded-full bg-white shadow-sm"></div>
+          <div className="w-1 h-1 rounded-full bg-white shadow-sm"></div>
+        </div>
+      </div>
+
       {/* Preview Section (Left) */}
-      <div className="w-full md:w-1/2 bg-gray-200 p-4 md:p-8 overflow-y-auto h-screen flex justify-center items-start print:p-0 print:m-0 print:w-full print:h-auto print:block print:bg-white print:overflow-visible">
+      <div 
+        className="bg-gray-200 p-4 md:p-8 overflow-y-auto h-screen flex justify-center items-start print:p-0 print:m-0 print:w-full print:h-auto print:block print:bg-white print:overflow-visible shrink-0"
+        style={{ width: typeof window !== 'undefined' && window.innerWidth >= 768 ? `${100 - formWidth}%` : '100%' }}
+      >
         <div className="transform scale-[0.6] sm:scale-[0.8] md:scale-[0.6] lg:scale-[0.8] xl:scale-100 origin-top print:transform-none print:scale-100 print:w-full print:h-auto print:m-0 print:p-0">
           <div className="bg-white shadow-2xl w-[210mm] min-h-[297mm] print:shadow-none print:m-0 print:p-0" ref={printRef}>
             {resumeData.template === 'classic' && <ClassicTemplate data={resumeData} />}

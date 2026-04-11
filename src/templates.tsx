@@ -28,312 +28,274 @@ const FormattedDescription = ({ text, className }: { text: string, className?: s
   return <div className={`mt-1 whitespace-pre-wrap ${className || ''}`}>{text.replace(/^[-*•]\s*/, '')}</div>;
 };
 
+// --- Block Generators ---
+// These ensure we can map over mainOrder / sidebarOrder with all their unique styles.
+
+const generateMainBlocks = (data: ResumeData, templateClassTheme: string) => {
+  const h = data.settings?.headlines || {};
+  return {
+    summary: data.summary ? (
+      <p className="text-sm text-gray-800 leading-relaxed mb-8 whitespace-pre-wrap">{data.summary}</p>
+    ) : null,
+    experience: data.experience.length > 0 ? (
+      <section className="mb-6">
+        <h3 className={templateClassTheme} style={{ color: data.themeColor, borderColor: data.themeColor }}>{h.experience || 'ניסיון תעסוקתי'}</h3>
+        {data.experience.map(exp => (
+          <article key={exp.id} className="mb-4">
+            <header className="flex justify-between font-bold text-sm">
+              <h4 className="m-0 text-gray-900">{exp.role}{exp.company ? `, ${exp.company}` : ''}</h4>
+              <span className="text-gray-500 whitespace-nowrap mr-4">{exp.dates}</span>
+            </header>
+            <FormattedDescription text={exp.description} className="text-sm text-gray-700 leading-relaxed" />
+          </article>
+        ))}
+      </section>
+    ) : null,
+    education: data.education.length > 0 ? (
+      <section className="mb-6">
+        <h3 className={templateClassTheme} style={{ color: data.themeColor, borderColor: data.themeColor }}>{h.education || 'השכלה'}</h3>
+        {data.education.map(edu => (
+          <article key={edu.id} className="mb-3">
+            <header className="flex justify-between font-bold text-sm">
+              <h4 className="m-0 text-gray-900">{edu.degree}, {edu.institution}</h4>
+              <span className="text-gray-500 whitespace-nowrap mr-4">{edu.dates}</span>
+            </header>
+            {edu.gpa && <div className="text-sm text-gray-700">GPA {edu.gpa}</div>}
+          </article>
+        ))}
+      </section>
+    ) : null,
+    courses: data.courses.length > 0 ? (
+      <div className="mb-6">
+        <h3 className={templateClassTheme} style={{ color: data.themeColor, borderColor: data.themeColor }}>{h.courses || 'קורסים'}</h3>
+        <div className="space-y-1 text-sm">
+          {data.courses.map(course => (
+            <div key={course.id} className="flex justify-between font-bold">
+              <span>{course.name}</span>
+              {course.grade && <span>{course.grade}</span>}
+            </div>
+          ))}
+        </div>
+      </div>
+    ) : null,
+    military: data.military.length > 0 ? (
+      <div className="mb-6">
+        <h3 className={templateClassTheme} style={{ color: data.themeColor, borderColor: data.themeColor }}>{h.military || 'שירות צבאי'}</h3>
+        {data.military.map(mil => (
+          <div key={mil.id} className="mb-3">
+            <div className="flex justify-between font-bold text-sm">
+              <span>{mil.role}</span>
+              <span className="text-gray-500 whitespace-nowrap mr-4">{mil.dates}</span>
+            </div>
+            <FormattedDescription text={mil.description} className="text-sm text-gray-700" />
+          </div>
+        ))}
+      </div>
+    ) : null,
+    projects: data.projects.length > 0 ? (
+      <div className="mb-6">
+        <h3 className={templateClassTheme} style={{ color: data.themeColor, borderColor: data.themeColor }}>{h.projects || 'פרוייקטים'}</h3>
+        {data.projects.map(proj => (
+          <div key={proj.id} className="mb-3">
+            <div className="font-bold text-sm">{proj.name}</div>
+            <FormattedDescription text={proj.description} className="text-sm text-gray-700 leading-relaxed" />
+          </div>
+        ))}
+      </div>
+    ) : null
+  } as Record<string, React.ReactNode>;
+};
+
+
 export const ClassicTemplate = ({ data }: { data: ResumeData }) => {
+  const activeImg = data.personal.profileImages?.find(i => i.id === data.personal.activeProfileImageId);
+  const pad = (data.settings?.padding ?? 8) * 4;
+  const h = data.settings?.headlines || {};
+  
+  const sidebarBlocks: Record<string, React.ReactNode> = {
+    personal: (
+      <div className="mb-8">
+        <h3 className="text-lg font-bold border-b border-white/30 pb-1 mb-4 text-right">פרטים אישיים</h3>
+        <div className="space-y-3 text-sm text-right" dir="ltr">
+          {data.personal.phone && (
+            <div className="flex items-center justify-end gap-2">
+              <a href={`tel:${data.personal.phone}`} className="hover:underline">{data.personal.phone}</a>
+              <span className="w-4 h-4 rounded-full border border-white flex items-center justify-center text-[10px]" aria-hidden="true">📞</span>
+            </div>
+          )}
+          {data.personal.email && (
+            <div className="flex items-center justify-end gap-2">
+              <a href={`mailto:${data.personal.email}`} className="hover:underline">{data.personal.email}</a>
+              <span className="w-4 h-4 rounded-full border border-white flex items-center justify-center text-[10px]" aria-hidden="true">✉</span>
+            </div>
+          )}
+          {data.personal.address && (
+            <div className="flex items-center justify-end gap-2" dir="rtl">
+              <span>{data.personal.address}</span>
+              <span className="w-4 h-4 rounded-full border border-white flex items-center justify-center text-[10px]" aria-hidden="true">📍</span>
+            </div>
+          )}
+          {data.personal.idNumber && (
+            <div className="mt-4 text-right" dir="rtl">
+              <div className="text-white/70 text-xs">תעודת זהות</div>
+              <div>{data.personal.idNumber}</div>
+            </div>
+          )}
+        </div>
+      </div>
+    ),
+    links: data.links.length > 0 ? (
+      <div className="mb-8">
+        <h3 className="text-lg font-bold border-b border-white/30 pb-1 mb-4 text-right">{h.links || 'קישורים'}</h3>
+        <div className="space-y-2 text-sm text-right" dir="ltr">
+          {data.links.map(link => (
+            <div key={link.id}><a href={link.url} className="underline hover:text-white/80">{link.name}</a></div>
+          ))}
+        </div>
+      </div>
+    ) : null,
+    skills: data.skills.length > 0 ? (
+      <div className="mb-8">
+        <h3 className="text-lg font-bold border-b border-white/30 pb-1 mb-4 text-right">{h.skills || 'מיומנויות'}</h3>
+        <BulletList items={data.skills} />
+      </div>
+    ) : null,
+    languages: data.languages.length > 0 ? (
+      <div className="mb-8">
+        <h3 className="text-lg font-bold border-b border-white/30 pb-1 mb-4 text-right">{h.languages || 'שפות'}</h3>
+        <BulletList items={data.languages} />
+      </div>
+    ) : null
+  };
+
+  const mainBlocks = generateMainBlocks(data, "text-lg font-bold border-b pb-1 mb-3");
+
   return (
     <div className="flex w-full min-h-[297mm] bg-white text-gray-900" dir="rtl">
-      {/* Sidebar (First in DOM = Right side in RTL) */}
-      <div className="w-1/3 text-white p-8" style={{ backgroundColor: data.themeColor }}>
-        {/* Profile Image */}
-        {data.personal.profileImage && (
+      {/* Sidebar */}
+      <div className="w-1/3 text-white" style={{ backgroundColor: data.themeColor, padding: `${pad}px` }}>
+        {activeImg && (
           <div className="flex justify-center mb-8">
-            <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white/20 shadow-lg">
-              <img src={data.personal.profileImage} alt="Profile" className="w-full h-full object-cover" />
+            <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white/20 shadow-lg shrink-0">
+              <img src={activeImg.dataUrl} alt="Profile" className="w-full h-full object-cover" style={{ objectPosition: `${activeImg.posX}% ${activeImg.posY}%` }} />
             </div>
           </div>
         )}
-
-        {/* Personal Details */}
-        <div className="mb-8">
-          <h3 className="text-lg font-bold border-b border-white/30 pb-1 mb-4 text-right">פרטים אישיים</h3>
-          <div className="space-y-3 text-sm text-right" dir="ltr">
-            {data.personal.phone && (
-              <div className="flex items-center justify-end gap-2">
-                <a href={`tel:${data.personal.phone}`} className="hover:underline">{data.personal.phone}</a>
-                <span className="w-4 h-4 rounded-full border border-white flex items-center justify-center text-[10px]" aria-hidden="true">📞</span>
-              </div>
-            )}
-            {data.personal.email && (
-              <div className="flex items-center justify-end gap-2">
-                <a href={`mailto:${data.personal.email}`} className="hover:underline">{data.personal.email}</a>
-                <span className="w-4 h-4 rounded-full border border-white flex items-center justify-center text-[10px]" aria-hidden="true">✉</span>
-              </div>
-            )}
-            {data.personal.address && (
-              <div className="flex items-center justify-end gap-2" dir="rtl">
-                <span>{data.personal.address}</span>
-                <span className="w-4 h-4 rounded-full border border-white flex items-center justify-center text-[10px]" aria-hidden="true">📍</span>
-              </div>
-            )}
-            {data.personal.idNumber && (
-              <div className="mt-4 text-right" dir="rtl">
-                <div className="text-white/70 text-xs">תעודת זהות</div>
-                <div>{data.personal.idNumber}</div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Links */}
-        {data.links.length > 0 && (
-          <div className="mb-8">
-            <h3 className="text-lg font-bold border-b border-white/30 pb-1 mb-4 text-right">קישורים</h3>
-            <div className="space-y-2 text-sm text-right" dir="ltr">
-              {data.links.map(link => (
-                <div key={link.id}>
-                  <a href={link.url} className="underline hover:text-white/80">{link.name}</a>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Skills */}
-        {data.skills.length > 0 && (
-          <div className="mb-8">
-            <h3 className="text-lg font-bold border-b border-white/30 pb-1 mb-4 text-right">מיומנויות</h3>
-            <BulletList items={data.skills} />
-          </div>
-        )}
-
-        {/* Languages */}
-        {data.languages.length > 0 && (
-          <div className="mb-8">
-            <h3 className="text-lg font-bold border-b border-white/30 pb-1 mb-4 text-right">שפות</h3>
-            <BulletList items={data.languages} />
-          </div>
-        )}
+        {data.settings?.sidebarOrder?.map(key => <React.Fragment key={key}>{sidebarBlocks[key]}</React.Fragment>)}
       </div>
 
-      {/* Main Content (Second in DOM = Left side in RTL) */}
-      <div className="w-2/3 p-8">
+      {/* Main */}
+      <div className="w-2/3" style={{ padding: `${pad}px` }}>
         <h1 className="text-4xl font-bold mb-1" style={{ color: data.themeColor }}>{data.personal.firstName} {data.personal.lastName}</h1>
         <h2 className="text-xl text-gray-600 mb-6">{data.personal.title}</h2>
-        
-        <p className="text-sm text-gray-800 leading-relaxed mb-8 whitespace-pre-wrap">
-          {data.summary}
-        </p>
-
-        {/* Experience */}
-        {data.experience.length > 0 && (
-          <section className="mb-6">
-            <h3 className="text-lg font-bold border-b pb-1 mb-3" style={{ color: data.themeColor, borderColor: data.themeColor }}>ניסיון תעסוקתי</h3>
-            {data.experience.map(exp => (
-              <article key={exp.id} className="mb-4">
-                <header className="flex justify-between font-bold text-sm">
-                  <h4 className="m-0 text-gray-900">{exp.role}{exp.company ? `, ${exp.company}` : ''}</h4>
-                  <span className="text-gray-500 whitespace-nowrap mr-4">{exp.dates}</span>
-                </header>
-                <FormattedDescription text={exp.description} className="text-sm text-gray-700 leading-relaxed" />
-              </article>
-            ))}
-          </section>
-        )}
-
-        {/* Education */}
-        {data.education.length > 0 && (
-          <section className="mb-6">
-            <h3 className="text-lg font-bold border-b pb-1 mb-3" style={{ color: data.themeColor, borderColor: data.themeColor }}>השכלה</h3>
-            {data.education.map(edu => (
-              <article key={edu.id} className="mb-3">
-                <header className="flex justify-between font-bold text-sm">
-                  <h4 className="m-0 text-gray-900">{edu.degree}, {edu.institution}</h4>
-                  <span className="text-gray-500 whitespace-nowrap mr-4">{edu.dates}</span>
-                </header>
-                {edu.gpa && <div className="text-sm text-gray-700">GPA {edu.gpa}</div>}
-              </article>
-            ))}
-          </section>
-        )}
-
-        {/* Courses */}
-        {data.courses.length > 0 && (
-          <div className="mb-6">
-            <h3 className="text-lg font-bold border-b pb-1 mb-3" style={{ color: data.themeColor, borderColor: data.themeColor }}>קורסים</h3>
-            <div className="space-y-1">
-              {data.courses.map(course => (
-                <div key={course.id} className="flex justify-between text-sm font-bold">
-                  <span>{course.name}</span>
-                  {course.grade && <span>{course.grade}</span>}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Military */}
-        {data.military.length > 0 && (
-          <div className="mb-6">
-            <h3 className="text-lg font-bold border-b pb-1 mb-3" style={{ color: data.themeColor, borderColor: data.themeColor }}>שירות צבאי</h3>
-            {data.military.map(mil => (
-              <div key={mil.id} className="mb-3">
-                <div className="flex justify-between font-bold text-sm">
-                  <span>{mil.role}</span>
-                  <span className="text-gray-500 whitespace-nowrap mr-4">{mil.dates}</span>
-                </div>
-                <FormattedDescription text={mil.description} className="text-sm text-gray-700" />
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Projects */}
-        {data.projects.length > 0 && (
-          <div className="mb-6">
-            <h3 className="text-lg font-bold border-b pb-1 mb-3" style={{ color: data.themeColor, borderColor: data.themeColor }}>פרוייקטים</h3>
-            {data.projects.map(proj => (
-              <div key={proj.id} className="mb-3">
-                <div className="font-bold text-sm">{proj.name}</div>
-                <FormattedDescription text={proj.description} className="text-sm text-gray-700 leading-relaxed" />
-              </div>
-            ))}
-          </div>
-        )}
+        {data.settings?.mainOrder?.map(key => <React.Fragment key={key}>{mainBlocks[key]}</React.Fragment>)}
       </div>
     </div>
   );
 };
 
+
 export const ModernTemplate = ({ data }: { data: ResumeData }) => {
+  const activeImg = data.personal.profileImages?.find(i => i.id === data.personal.activeProfileImageId);
+  const pad = (data.settings?.padding ?? 8) * 4;
+  const h = data.settings?.headlines || {};
+
+  const sidebarBlocks: Record<string, React.ReactNode> = {
+    skills: data.skills.length > 0 ? (
+      <div>
+        <h3 className="text-lg font-bold border-b pb-1 mb-4" style={{ color: data.themeColor, borderColor: data.themeColor }}>{h.skills || 'מיומנויות'}</h3>
+        <div className="text-gray-700"><BulletList items={data.skills} /></div>
+      </div>
+    ) : null,
+    languages: data.languages.length > 0 ? (
+      <div>
+        <h3 className="text-lg font-bold border-b pb-1 mb-4" style={{ color: data.themeColor, borderColor: data.themeColor }}>{h.languages || 'שפות'}</h3>
+        <div className="text-gray-700"><BulletList items={data.languages} /></div>
+      </div>
+    ) : null,
+    links: data.links.length > 0 ? (
+      <div>
+        <h3 className="text-lg font-bold border-b pb-1 mb-4" style={{ color: data.themeColor, borderColor: data.themeColor }}>{h.links || 'קישורים'}</h3>
+        <div className="space-y-2 text-sm text-gray-700" dir="ltr">
+          {data.links.map(link => (
+            <div key={link.id} className="text-right">
+              <a href={link.url} className="underline hover:text-blue-600">{link.name}</a>
+            </div>
+          ))}
+        </div>
+      </div>
+    ) : null
+  };
+
+  const mainBlocks = generateMainBlocks(data, "text-lg font-bold border-b pb-1 mb-3");
+
   return (
     <div className="w-full min-h-[297mm] bg-white text-gray-900 flex flex-col" dir="rtl">
       {/* Header */}
-      <div className="text-white p-8 flex items-center gap-8" style={{ backgroundColor: data.themeColor }}>
-        {data.personal.profileImage && (
+      <div className="text-white flex items-center gap-8" style={{ backgroundColor: data.themeColor, padding: `${pad}px` }}>
+        {activeImg && (
           <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white/20 shadow-lg shrink-0">
-            <img src={data.personal.profileImage} alt="Profile" className="w-full h-full object-cover" />
+            <img src={activeImg.dataUrl} alt="Profile" className="w-full h-full object-cover" style={{ objectPosition: `${activeImg.posX}% ${activeImg.posY}%` }} />
           </div>
         )}
         <div className="flex-1">
           <h1 className="text-4xl font-bold mb-2">{data.personal.firstName} {data.personal.lastName}</h1>
           <h2 className="text-xl text-white/80 mb-4">{data.personal.title}</h2>
           <address className="flex flex-wrap gap-4 text-sm text-white/90 not-italic">
-            {data.personal.phone && <span><span aria-hidden="true">📞</span> <a href={`tel:${data.personal.phone}`} className="hover:underline">{data.personal.phone}</a></span>}
-            {data.personal.email && <span><span aria-hidden="true">✉</span> <a href={`mailto:${data.personal.email}`} className="hover:underline">{data.personal.email}</a></span>}
+            {data.personal.phone && <span><span aria-hidden="true">📞</span> {data.personal.phone}</span>}
+            {data.personal.email && <span><span aria-hidden="true">✉</span> {data.personal.email}</span>}
             {data.personal.address && <span><span aria-hidden="true">📍</span> {data.personal.address}</span>}
           </address>
         </div>
       </div>
 
-      {/* Body */}
-      <div className="flex flex-1 p-8 gap-8">
+      <div className="flex flex-1 gap-8" style={{ padding: `${pad}px` }}>
         {/* Main Content */}
         <div className="w-2/3">
-          <p className="text-sm text-gray-800 leading-relaxed mb-8 whitespace-pre-wrap">
-            {data.summary}
-          </p>
-
-          {/* Experience */}
-          {data.experience.length > 0 && (
-            <section className="mb-6">
-              <h3 className="text-lg font-bold border-b pb-1 mb-3" style={{ color: data.themeColor, borderColor: data.themeColor }}>ניסיון תעסוקתי</h3>
-              {data.experience.map(exp => (
-                <article key={exp.id} className="mb-4">
-                  <header className="flex justify-between font-bold text-sm">
-                    <h4 className="m-0 text-gray-900">{exp.role}{exp.company ? `, ${exp.company}` : ''}</h4>
-                    <span className="text-gray-500 whitespace-nowrap mr-4">{exp.dates}</span>
-                  </header>
-                  <FormattedDescription text={exp.description} className="text-sm text-gray-700 leading-relaxed" />
-                </article>
-              ))}
-            </section>
-          )}
-
-          {/* Education */}
-          {data.education.length > 0 && (
-            <section className="mb-6">
-              <h3 className="text-lg font-bold border-b pb-1 mb-3" style={{ color: data.themeColor, borderColor: data.themeColor }}>השכלה</h3>
-              {data.education.map(edu => (
-                <article key={edu.id} className="mb-3">
-                  <header className="flex justify-between font-bold text-sm">
-                    <h4 className="m-0 text-gray-900">{edu.degree}, {edu.institution}</h4>
-                    <span className="text-gray-500 whitespace-nowrap mr-4">{edu.dates}</span>
-                  </header>
-                  {edu.gpa && <div className="text-sm text-gray-700">GPA {edu.gpa}</div>}
-                </article>
-              ))}
-            </section>
-          )}
-
-          {/* Projects */}
-          {data.projects.length > 0 && (
-            <div className="mb-6">
-              <h3 className="text-lg font-bold border-b pb-1 mb-3" style={{ color: data.themeColor, borderColor: data.themeColor }}>פרוייקטים</h3>
-              {data.projects.map(proj => (
-                <div key={proj.id} className="mb-3">
-                  <div className="font-bold text-sm">{proj.name}</div>
-                  <FormattedDescription text={proj.description} className="text-sm text-gray-700 leading-relaxed" />
-                </div>
-              ))}
-            </div>
-          )}
+          {data.settings?.mainOrder?.map(key => <React.Fragment key={key}>{mainBlocks[key]}</React.Fragment>)}
         </div>
-
         {/* Sidebar */}
         <div className="w-1/3 space-y-8">
-          {/* Skills */}
-          {data.skills.length > 0 && (
-            <div>
-              <h3 className="text-lg font-bold border-b pb-1 mb-4" style={{ color: data.themeColor, borderColor: data.themeColor }}>מיומנויות</h3>
-              <div className="text-gray-700">
-                <BulletList items={data.skills} />
-              </div>
-            </div>
-          )}
-
-          {/* Languages */}
-          {data.languages.length > 0 && (
-            <div>
-              <h3 className="text-lg font-bold border-b pb-1 mb-4" style={{ color: data.themeColor, borderColor: data.themeColor }}>שפות</h3>
-              <div className="text-gray-700">
-                <BulletList items={data.languages} />
-              </div>
-            </div>
-          )}
-
-          {/* Courses */}
-          {data.courses.length > 0 && (
-            <div>
-              <h3 className="text-lg font-bold border-b pb-1 mb-4" style={{ color: data.themeColor, borderColor: data.themeColor }}>קורסים</h3>
-              <div className="space-y-2 text-sm text-gray-700">
-                {data.courses.map(course => (
-                  <div key={course.id} className="flex justify-between font-bold">
-                    <span>{course.name}</span>
-                    {course.grade && <span>{course.grade}</span>}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Links */}
-          {data.links.length > 0 && (
-            <div>
-              <h3 className="text-lg font-bold border-b pb-1 mb-4" style={{ color: data.themeColor, borderColor: data.themeColor }}>קישורים</h3>
-              <div className="space-y-2 text-sm text-gray-700" dir="ltr">
-                {data.links.map(link => (
-                  <div key={link.id} className="text-right">
-                    <a href={link.url} className="underline hover:text-blue-600">{link.name}</a>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          {data.settings?.sidebarOrder?.map(key => <React.Fragment key={key}>{sidebarBlocks[key]}</React.Fragment>)}
         </div>
       </div>
     </div>
   );
 };
 
+
 export const MinimalistTemplate = ({ data }: { data: ResumeData }) => {
+  const pad = (data.settings?.padding ?? 8) * 4;
+  const padStr = `${pad * 1.5}px ${pad}px`; // Minimalist has slightly larger Y padding natively
+  const h = data.settings?.headlines || {};
+
+  const mainBlocks = generateMainBlocks(data, "text-lg font-bold border-b pb-1 mb-4 uppercase tracking-wider text-gray-900");
+
+  const sidebarBlocks: Record<string, React.ReactNode> = {
+    skills: data.skills.length > 0 ? (
+      <div>
+        <h3 className="text-lg font-bold border-b pb-1 mb-4 uppercase tracking-wider text-gray-900" style={{ borderColor: data.themeColor }}>{h.skills || 'מיומנויות'}</h3>
+        <div className="text-gray-700"><BulletList items={data.skills} /></div>
+      </div>
+    ) : null,
+    languages: data.languages.length > 0 ? (
+      <div>
+        <h3 className="text-lg font-bold border-b pb-1 mb-4 uppercase tracking-wider text-gray-900" style={{ borderColor: data.themeColor }}>{h.languages || 'שפות'}</h3>
+        <div className="text-gray-700"><BulletList items={data.languages} /></div>
+      </div>
+    ) : null,
+    links: null // Minimalist puts links in header natively
+  };
+
   return (
-    <div className="w-full min-h-[297mm] bg-white text-gray-900 p-12" dir="rtl">
+    <div className="w-full min-h-[297mm] bg-white text-gray-900" style={{ padding: padStr }} dir="rtl">
       {/* Header */}
       <div className="text-center mb-8 border-b-2 pb-6" style={{ borderColor: data.themeColor }}>
         <h1 className="text-4xl font-bold mb-2 tracking-tight" style={{ color: data.themeColor }}>{data.personal.firstName} {data.personal.lastName}</h1>
         <h2 className="text-xl text-gray-600 mb-4">{data.personal.title}</h2>
         <address className="flex flex-wrap justify-center gap-4 text-sm text-gray-600 not-italic">
-          {data.personal.phone && <span><a href={`tel:${data.personal.phone}`} className="hover:underline">{data.personal.phone}</a></span>}
-          {data.personal.email && <span><a href={`mailto:${data.personal.email}`} className="hover:underline">{data.personal.email}</a></span>}
+          {data.personal.phone && <span>{data.personal.phone}</span>}
+          {data.personal.email && <span>{data.personal.email}</span>}
           {data.personal.address && <span>{data.personal.address}</span>}
         </address>
         {data.links.length > 0 && (
@@ -345,67 +307,11 @@ export const MinimalistTemplate = ({ data }: { data: ResumeData }) => {
         )}
       </div>
 
-      <p className="text-sm text-gray-800 leading-relaxed mb-8 whitespace-pre-wrap text-center max-w-3xl mx-auto">
-        {data.summary}
-      </p>
-
       <div className="grid grid-cols-1 gap-8">
-        {/* Experience */}
-        {data.experience.length > 0 && (
-          <section>
-            <h3 className="text-lg font-bold border-b pb-1 mb-4 uppercase tracking-wider" style={{ color: data.themeColor, borderColor: data.themeColor }}>ניסיון תעסוקתי</h3>
-            <div className="space-y-5">
-              {data.experience.map(exp => (
-                <article key={exp.id}>
-                  <header className="flex justify-between font-bold text-sm mb-1">
-                    <h4 className="m-0 text-gray-900">{exp.role}{exp.company ? ` | ${exp.company}` : ''}</h4>
-                    <span className="text-gray-500">{exp.dates}</span>
-                  </header>
-                  <FormattedDescription text={exp.description} className="text-sm text-gray-700 leading-relaxed" />
-                </article>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Education */}
-        {data.education.length > 0 && (
-          <section>
-            <h3 className="text-lg font-bold border-b pb-1 mb-4 uppercase tracking-wider" style={{ color: data.themeColor, borderColor: data.themeColor }}>השכלה</h3>
-            <div className="space-y-4">
-              {data.education.map(edu => (
-                <article key={edu.id}>
-                  <header className="flex justify-between font-bold text-sm">
-                    <h4 className="m-0 text-gray-900">{edu.degree}, {edu.institution}</h4>
-                    <span className="text-gray-500">{edu.dates}</span>
-                  </header>
-                  {edu.gpa && <div className="text-sm text-gray-700 mt-1">GPA {edu.gpa}</div>}
-                </article>
-              ))}
-            </div>
-          </section>
-        )}
+        {data.settings?.mainOrder?.map(key => <React.Fragment key={key}>{mainBlocks[key]}</React.Fragment>)}
 
         <div className="grid grid-cols-2 gap-8">
-          {/* Skills */}
-          {data.skills.length > 0 && (
-            <div>
-              <h3 className="text-lg font-bold border-b pb-1 mb-4 uppercase tracking-wider" style={{ color: data.themeColor, borderColor: data.themeColor }}>מיומנויות</h3>
-              <div className="text-gray-700">
-                <BulletList items={data.skills} />
-              </div>
-            </div>
-          )}
-
-          {/* Languages */}
-          {data.languages.length > 0 && (
-            <div>
-              <h3 className="text-lg font-bold border-b pb-1 mb-4 uppercase tracking-wider" style={{ color: data.themeColor, borderColor: data.themeColor }}>שפות</h3>
-              <div className="text-gray-700">
-                <BulletList items={data.languages} />
-              </div>
-            </div>
-          )}
+          {data.settings?.sidebarOrder?.map(key => <React.Fragment key={key}>{sidebarBlocks[key]}</React.Fragment>)}
         </div>
       </div>
     </div>

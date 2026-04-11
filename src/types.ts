@@ -1,6 +1,21 @@
+export type ProfileImageInfo = {
+  id: string;
+  dataUrl: string;
+  posX: number;
+  posY: number;
+};
+
+export type TemplateSettings = {
+  padding: number;
+  headlines: Record<string, string>;
+  sidebarOrder: string[];
+  mainOrder: string[];
+};
+
 export type ResumeData = {
   template: string;
   themeColor: string;
+  settings: TemplateSettings;
   personal: {
     firstName: string;
     lastName: string;
@@ -9,7 +24,8 @@ export type ResumeData = {
     phone: string;
     address: string;
     idNumber: string;
-    profileImage?: string;
+    profileImages: ProfileImageInfo[];
+    activeProfileImageId?: string;
   };
   summary: string;
   experience: Array<{ id: string; role: string; company: string; dates: string; description: string }>;
@@ -26,6 +42,12 @@ export type ResumeData = {
 export const initialResumeData: ResumeData = {
   template: "classic",
   themeColor: "#001f3f",
+  settings: {
+    padding: 8,
+    headlines: {},
+    sidebarOrder: ['personal', 'links', 'skills', 'languages'],
+    mainOrder: ['summary', 'experience', 'education', 'courses', 'military', 'projects']
+  },
   personal: {
     firstName: "ירדן שלום",
     lastName: "בר-אל",
@@ -34,7 +56,7 @@ export const initialResumeData: ResumeData = {
     phone: "0548122053",
     address: "שביל הזורעים 71, כרמיאל, ישראל",
     idNumber: "314875113",
-    profileImage: "",
+    profileImages: [],
   },
   summary: "סטודנט הסמסטר האחרון להנדסת תוכנה (B.Sc) ב-ORT בראודה (ממוצע 83).\nבעל רקע טכני חזק וניסיון מעשי בפיתוח Full-stack, עבודה עם מסדי נתונים (MySQL) ושפות התכנות Java, Python ו-C. בעל ידע מעמיק בתחומי Data Mining, אבטחת מידע ומערכות IoT. בעל יכולת למידה עצמית גבוהה וניסיון בפתרון בעיות בסביבות עבודה דינמיות. מחפש להשתלב בתפקיד פיתוח קבוע ומאתגר.",
   experience: [],
@@ -112,7 +134,12 @@ export const initialResumeData: ResumeData = {
 
 export const emptyResumeData: ResumeData = {
   template: "classic",
-  themeColor: "#001f3f",
+  settings: {
+    padding: 8,
+    headlines: {},
+    sidebarOrder: ['personal', 'links', 'skills', 'languages'],
+    mainOrder: ['summary', 'experience', 'education', 'courses', 'military', 'projects']
+  },
   personal: {
     firstName: "",
     lastName: "",
@@ -121,7 +148,7 @@ export const emptyResumeData: ResumeData = {
     phone: "",
     address: "",
     idNumber: "",
-    profileImage: "",
+    profileImages: [],
   },
   summary: "",
   experience: [],

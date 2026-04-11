@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { Upload, Printer, Plus, Trash2, GripVertical } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
@@ -22,6 +22,7 @@ const loadSavedData = (): ResumeData => {
 };
 
 export default function App() {
+  const [confirmAction, setConfirmAction] = useState<'clear' | 'reset' | null>(null);
   const { register, control, handleSubmit, reset, watch } = useForm<ResumeData>({
     defaultValues: loadSavedData(),
   });
@@ -78,18 +79,10 @@ export default function App() {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-800 shrink-0">בונה קורות חיים</h1>
           <div className="flex gap-2">
-            <button type="button" onClick={() => {
-              if(confirm('האם אתה בטוח שברצונך למחוק הכל ולהתחיל מיד ריק?')) {
-                reset(emptyResumeData);
-              }
-            }} className="bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 transition text-sm font-medium whitespace-nowrap">
+            <button type="button" onClick={() => setConfirmAction('clear')} className="bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 transition text-sm font-medium whitespace-nowrap">
               נקה טופס
             </button>
-            <button type="button" onClick={() => {
-              if(confirm('האם אתה בטוח שברצונך לאפס לנתוני הדוגמה?')) {
-                reset(initialResumeData);
-              }
-            }} className="bg-red-50 text-red-600 px-3 py-2 rounded-lg hover:bg-red-100 transition text-sm font-medium whitespace-nowrap" title="טען את קורות החיים של ירדן (לדוגמה)">
+            <button type="button" onClick={() => setConfirmAction('reset')} className="bg-red-50 text-red-600 px-3 py-2 rounded-lg hover:bg-red-100 transition text-sm font-medium whitespace-nowrap" title="טען את קורות החיים של ירדן (לדוגמה)">
               טען דוגמא
             </button>
             <button onClick={() => handlePrint()} className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition">
@@ -543,6 +536,35 @@ export default function App() {
           </div>
         </div>
       </div>
+
+      {confirmAction && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] no-print">
+          <div className="bg-white p-6 rounded-xl shadow-xl max-w-sm w-full border border-gray-100 m-4" dir="rtl">
+            <h3 className="text-xl font-bold mb-3 text-gray-800">
+              {confirmAction === 'clear' ? 'נקה נתונים?' : 'חזור לנתוני דוגמה?'}
+            </h3>
+            <p className="text-gray-600 mb-6 text-sm leading-relaxed">
+              {confirmAction === 'clear' 
+                ? 'הפעולה תמחק את כל הטופס ותתחיל מסמך ריק. כל מה שהזנת יימחק ולא ניתן לבטל פעולה זו.'
+                : 'הפעולה תשחזר את קורות החיים המקוריים של ירדן ותמחוק את מה שהזנת. לא ניתן לבטל פעולה זו.'}
+            </p>
+            <div className="flex justify-end gap-3">
+              <button type="button" onClick={() => setConfirmAction(null)} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition font-medium">ביטול</button>
+              <button 
+                type="button"
+                onClick={() => {
+                  if (confirmAction === 'clear') reset(emptyResumeData);
+                  if (confirmAction === 'reset') reset(initialResumeData);
+                  setConfirmAction(null);
+                }} 
+                className="px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium shadow-sm"
+              >
+                כן, אני בטוח
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

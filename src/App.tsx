@@ -128,7 +128,7 @@ const FormSectionHeader = ({
             type="range" min="0" max="48" 
             value={currentPadding}
             onChange={(e) => setValue(`settings.sectionPadding.${sectionId}`, parseInt(e.target.value))}
-            className="flex-1 accent-blue-600 cursor-pointer h-1.5 bg-gray-200 rounded-full appearance-none" 
+            className="flex-1 accent-blue-600 cursor-pointer h-2 bg-blue-100 rounded-full appearance-none hover:bg-blue-200 transition-colors" 
           />
           <span className="text-[10px] text-gray-400 font-medium whitespace-nowrap">מרווח</span>
         </div>
@@ -294,7 +294,7 @@ export default function App() {
                     type="range" min="0" max="32" 
                     value={resumeData.settings.padding} 
                     onChange={(e) => setValue('settings.padding', parseInt(e.target.value))}
-                    className="flex-1 accent-blue-600 cursor-pointer" 
+                    className="flex-1 accent-blue-600 cursor-pointer h-2 bg-blue-100 rounded-full appearance-none hover:bg-blue-200 transition-colors" 
                   />
                   <span className="text-xs text-gray-500 font-medium whitespace-nowrap">מרווח</span>
                 </div>
@@ -398,7 +398,7 @@ export default function App() {
                             );
                             setValue('personal.profileImages', newImages);
                           }}
-                          className="flex-1 cursor-ew-resize accent-blue-600"
+                          className="flex-1 cursor-ew-resize accent-blue-600 h-2 bg-blue-100 rounded-full appearance-none hover:bg-blue-200 transition-colors" 
                         />
                         <input 
                           type="number" min="0" max="100"
@@ -425,7 +425,7 @@ export default function App() {
                             );
                             setValue('personal.profileImages', newImages);
                           }}
-                          className="flex-1 cursor-ew-resize accent-blue-600"
+                          className="flex-1 cursor-ew-resize accent-blue-600 h-2 bg-blue-100 rounded-full appearance-none hover:bg-blue-200 transition-colors" 
                         />
                         <input 
                           type="number" min="0" max="100"
@@ -452,7 +452,7 @@ export default function App() {
                             );
                             setValue('personal.profileImages', newImages);
                           }}
-                          className="flex-1 cursor-ew-resize accent-blue-600"
+                          className="flex-1 cursor-ew-resize accent-blue-600 h-2 bg-blue-100 rounded-full appearance-none hover:bg-blue-200 transition-colors" 
                         />
                         <input 
                           type="number" min="-180" max="180"
@@ -479,7 +479,7 @@ export default function App() {
                             );
                             setValue('personal.profileImages', newImages);
                           }}
-                          className="flex-1 cursor-ew-resize accent-blue-600"
+                          className="flex-1 cursor-ew-resize accent-blue-600 h-2 bg-blue-100 rounded-full appearance-none hover:bg-blue-200 transition-colors" 
                         />
                         <input 
                           type="number" min="10" max="400"

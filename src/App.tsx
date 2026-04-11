@@ -72,6 +72,71 @@ const DraggableImagePreview = ({ img, onChange }: { img: ProfileImageInfo, onCha
   );
 };
 
+const FormSectionHeader = ({ 
+  title, 
+  orderKey, 
+  sectionId, 
+  size = 'xl', 
+  register, 
+  watch, 
+  setValue, 
+  moveOrder, 
+  children 
+}: { 
+  title: string, 
+  orderKey: 'mainOrder' | 'sidebarOrder', 
+  sectionId: string, 
+  size?: 'lg' | 'xl', 
+  register: any,
+  watch: any,
+  setValue: any,
+  moveOrder: (key: any, id: string, dir: number) => void,
+  children?: React.ReactNode 
+}) => {
+  const currentPadding = watch(`settings.sectionPadding.${sectionId}`) ?? 8;
+  
+  return (
+    <div className="flex flex-col gap-2 mb-4 border-b pb-3 group">
+      <div className="flex justify-between items-center">
+        <div className="flex items-center gap-3 w-full">
+          <input 
+            {...register(`settings.headlines.${sectionId}`)}
+            placeholder={title}
+            className={`text-${size} font-semibold text-gray-700 bg-transparent border-b border-transparent focus:border-blue-500 focus:outline-none hover:bg-gray-50 transition p-1 -m-1 min-w-[120px] max-w-[200px]`}
+          />
+          {moveOrder && (
+            <div className="flex bg-gray-100 rounded-md overflow-hidden border border-gray-200 transition-opacity" dir="ltr">
+              <button type="button" onClick={() => moveOrder(orderKey, sectionId, -1)} className="px-2 py-1 hover:bg-gray-200 text-gray-700 hover:text-black transition text-sm font-black" title="הזז למעלה ב-PDF">↑</button>
+              <div className="w-px bg-gray-300"></div>
+              <button type="button" onClick={() => moveOrder(orderKey, sectionId, 1)} className="px-2 py-1 hover:bg-gray-200 text-gray-700 hover:text-black transition text-sm font-black" title="הזז למטה ב-PDF">↓</button>
+            </div>
+          )}
+        </div>
+        {children}
+      </div>
+      <div className="bg-gray-50 p-2.5 rounded-lg border border-gray-100 mt-2 hover:border-blue-200 transition">
+        <div className="flex justify-between items-center mb-1">
+          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">ריווח עליון (סימטריה)</span>
+          <div className="flex items-center gap-1 bg-white px-1.5 py-0.5 rounded border border-gray-200">
+            <span className="text-[10px] font-mono font-bold text-blue-600">{currentPadding}</span>
+            <span className="text-[9px] font-bold text-gray-400">px</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-2.5">
+          <span className="text-[10px] text-gray-400 font-medium whitespace-nowrap">צפוף</span>
+          <input 
+            type="range" min="0" max="48" 
+            value={currentPadding}
+            onChange={(e) => setValue(`settings.sectionPadding.${sectionId}`, parseInt(e.target.value))}
+            className="flex-1 accent-blue-600 cursor-pointer h-1.5 bg-gray-200 rounded-full appearance-none" 
+          />
+          <span className="text-[10px] text-gray-400 font-medium whitespace-nowrap">מרווח</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function App() {
   const [confirmAction, setConfirmAction] = useState<'clear' | 'reset' | null>(null);
   const [fakeIndex, setFakeIndex] = useState(0);
@@ -98,36 +163,6 @@ export default function App() {
     reset({ ...resumeData, settings: { ...resumeData.settings, [key]: list } });
   };
 
-  const FormSectionHeader = ({ title, orderKey, sectionId, size = 'xl', children }: { title: string, orderKey: 'mainOrder' | 'sidebarOrder', sectionId: string, size?: 'lg' | 'xl', children?: React.ReactNode }) => (
-    <div className="flex flex-col gap-2 mb-4 border-b pb-3">
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-3 w-full">
-          <input 
-            {...register(`settings.headlines.${sectionId}`)}
-            placeholder={title}
-            className={`text-${size} font-semibold text-gray-700 bg-transparent border-b border-transparent focus:border-blue-500 focus:outline-none hover:bg-gray-50 transition p-1 -m-1 min-w-[120px] max-w-[200px]`}
-          />
-          <div className="flex bg-gray-100 rounded-md overflow-hidden border border-gray-200" dir="ltr">
-            <button type="button" onClick={() => moveOrder(orderKey, sectionId, -1)} className="px-2 py-1 hover:bg-gray-200 text-gray-700 hover:text-black transition text-sm font-black" title="הזז למעלה ב-PDF">↑</button>
-            <div className="w-px bg-gray-300"></div>
-            <button type="button" onClick={() => moveOrder(orderKey, sectionId, 1)} className="px-2 py-1 hover:bg-gray-200 text-gray-700 hover:text-black transition text-sm font-black" title="הזז למטה ב-PDF">↓</button>
-          </div>
-        </div>
-        {children}
-      </div>
-      <div className="flex items-center gap-2 text-xs text-gray-500 bg-gray-50 p-1.5 rounded-lg w-fit mt-1 border border-gray-100">
-        <span className="font-medium text-gray-600">ריווח עליון: צפוף</span>
-        <input 
-          type="range" min="0" max="32" 
-          value={watch(`settings.sectionPadding.${sectionId}`) ?? 8}
-          onChange={(e) => setValue(`settings.sectionPadding.${sectionId}`, parseInt(e.target.value))}
-          className="w-24 accent-blue-600 cursor-pointer" 
-        />
-        <span className="font-medium text-gray-600">מרווח ({watch(`settings.sectionPadding.${sectionId}`) ?? 8})</span>
-      </div>
-    </div>
-  );
-
   const handlePrint = () => {
     window.print();
   };
@@ -152,7 +187,6 @@ export default function App() {
         canvas.height = viewport.height;
         canvas.width = viewport.width;
 
-        // Fill with white to prevent transparency/ghosting issues in print
         context.fillStyle = '#ffffff';
         context.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -165,7 +199,6 @@ export default function App() {
       console.error("Error parsing PDF", err);
       alert('שגיאה בטעינת קובץ PDF');
     }
-    // Clear input so user can add the same file again if they deleted it
     e.target.value = '';
   };
 
@@ -271,7 +304,15 @@ export default function App() {
 
           {/* Personal Details */}
           <section>
-            <h2 className="text-xl font-semibold mb-4 text-gray-700 border-b pb-2">פרטים אישיים</h2>
+            <FormSectionHeader 
+              title="פרטים אישיים" 
+              orderKey="sidebarOrder" 
+              sectionId="personal"
+              register={register} 
+              watch={watch} 
+              setValue={setValue} 
+              moveOrder={undefined as any}
+            />
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2 mb-2 p-4 bg-gray-50 rounded-xl border border-gray-200">
                 <label className="block text-sm font-bold text-gray-700 mb-3">גלריית תלושי/תמונות פרופיל</label>
@@ -490,13 +531,29 @@ export default function App() {
 
           {/* Summary */}
           <section>
-            <FormSectionHeader title="תקציר" orderKey="mainOrder" sectionId="summary" />
+            <FormSectionHeader 
+              title="תקציר" 
+              orderKey="mainOrder" 
+              sectionId="summary" 
+              register={register} 
+              watch={watch} 
+              setValue={setValue} 
+              moveOrder={moveOrder} 
+            />
             <textarea {...register('summary')} rows={4} className="w-full border rounded-md p-2 focus:ring-2 focus:ring-blue-500 outline-none resize-none" placeholder="תיאור קצר המפרט את הניסיון המקצועי שלך..."></textarea>
           </section>
 
           {/* Experience */}
           <section>
-            <FormSectionHeader title="ניסיון תעסוקתי" orderKey="mainOrder" sectionId="experience">
+            <FormSectionHeader 
+              title="ניסיון תעסוקתי" 
+              orderKey="mainOrder" 
+              sectionId="experience"
+              register={register} 
+              watch={watch} 
+              setValue={setValue} 
+              moveOrder={moveOrder}
+            >
               <button type="button" onClick={() => {
                 const current = watch('experience');
                 reset({ ...watch(), experience: [...current, { id: uuidv4(), role: '', company: '', dates: '', description: '' }] });
@@ -558,7 +615,15 @@ export default function App() {
 
           {/* Education */}
           <section>
-            <FormSectionHeader title="השכלה" orderKey="mainOrder" sectionId="education">
+            <FormSectionHeader 
+              title="השכלה" 
+              orderKey="mainOrder" 
+              sectionId="education"
+              register={register} 
+              watch={watch} 
+              setValue={setValue} 
+              moveOrder={moveOrder}
+            >
               <button type="button" onClick={() => {
                 const current = watch('education');
                 reset({ ...watch(), education: [...current, { id: uuidv4(), degree: '', institution: '', dates: '', gpa: '' }] });
@@ -620,7 +685,15 @@ export default function App() {
 
           {/* Courses */}
           <section>
-            <FormSectionHeader title="קורסים" orderKey="mainOrder" sectionId="courses">
+            <FormSectionHeader 
+              title="קורסים" 
+              orderKey="mainOrder" 
+              sectionId="courses"
+              register={register} 
+              watch={watch} 
+              setValue={setValue} 
+              moveOrder={moveOrder}
+            >
               <button type="button" onClick={() => {
                 const current = watch('courses');
                 reset({ ...watch(), courses: [...current, { id: uuidv4(), name: '', grade: '' }] });
@@ -644,7 +717,15 @@ export default function App() {
 
           {/* Military */}
           <section>
-            <FormSectionHeader title="שירות צבאי" orderKey="mainOrder" sectionId="military">
+            <FormSectionHeader 
+              title="שירות צבאי" 
+              orderKey="mainOrder" 
+              sectionId="military"
+              register={register} 
+              watch={watch} 
+              setValue={setValue} 
+              moveOrder={moveOrder}
+            >
               <button type="button" onClick={() => {
                 const current = watch('military');
                 reset({ ...watch(), military: [...current, { id: uuidv4(), role: '', dates: '', description: '' }] });
@@ -682,7 +763,15 @@ export default function App() {
 
           {/* Projects */}
           <section>
-            <FormSectionHeader title="פרוייקטים" orderKey="mainOrder" sectionId="projects">
+            <FormSectionHeader 
+              title="פרוייקטים" 
+              orderKey="mainOrder" 
+              sectionId="projects"
+              register={register} 
+              watch={watch} 
+              setValue={setValue} 
+              moveOrder={moveOrder}
+            >
               <button type="button" onClick={() => {
                 const current = watch('projects');
                 reset({ ...watch(), projects: [...current, { id: uuidv4(), name: '', description: '' }] });
@@ -716,7 +805,16 @@ export default function App() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Skills */}
             <section>
-              <FormSectionHeader title="מיומנויות" orderKey="sidebarOrder" sectionId="skills" size="lg">
+              <FormSectionHeader 
+                title="מיומנויות" 
+                orderKey="sidebarOrder" 
+                sectionId="skills" 
+                size="lg"
+                register={register} 
+                watch={watch} 
+                setValue={setValue} 
+                moveOrder={moveOrder}
+              >
                 <button type="button" onClick={() => {
                   const current = watch('skills');
                   reset({ ...watch(), skills: [...current, { id: uuidv4(), name: '' }] });
@@ -747,7 +845,16 @@ export default function App() {
 
             {/* Languages */}
             <section>
-              <FormSectionHeader title="שפות" orderKey="sidebarOrder" sectionId="languages" size="lg">
+              <FormSectionHeader 
+                title="שפות" 
+                orderKey="sidebarOrder" 
+                sectionId="languages" 
+                size="lg"
+                register={register} 
+                watch={watch} 
+                setValue={setValue} 
+                moveOrder={moveOrder}
+              >
                 <button type="button" onClick={() => {
                   const current = watch('languages');
                   reset({ ...watch(), languages: [...current, { id: uuidv4(), name: '' }] });
@@ -770,7 +877,16 @@ export default function App() {
 
             {/* Links */}
             <section className="col-span-1 md:col-span-2">
-              <FormSectionHeader title="קישורים" orderKey="sidebarOrder" sectionId="links" size="lg">
+              <FormSectionHeader 
+                title="קישורים" 
+                orderKey="sidebarOrder" 
+                sectionId="links" 
+                size="lg"
+                register={register} 
+                watch={watch} 
+                setValue={setValue} 
+                moveOrder={moveOrder}
+              >
                 <button type="button" onClick={() => {
                   const current = watch('links');
                   reset({ ...watch(), links: [...current, { id: uuidv4(), name: '', url: '' }] });
@@ -794,9 +910,15 @@ export default function App() {
 
             {/* Appendix */}
             <section className="col-span-1 md:col-span-2">
-              <div className="flex justify-between items-center mb-4 border-b pb-2">
-                <h2 className="text-lg font-semibold text-gray-700">נספחים (גיליון ציונים)</h2>
-              </div>
+              <FormSectionHeader 
+                title="נספחים (גיליון ציונים)" 
+                orderKey="sidebarOrder" 
+                sectionId="appendix"
+                register={register} 
+                watch={watch} 
+                setValue={setValue} 
+                moveOrder={undefined as any}
+              />
               <div className="space-y-4">
                 <label className="cursor-pointer flex items-center justify-center gap-2 w-full border-2 border-dashed border-gray-300 rounded-lg p-6 hover:bg-gray-50 transition text-gray-600">
                   <Upload size={24} />

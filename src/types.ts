@@ -4,6 +4,7 @@ export type ProfileImageInfo = {
   posX: number;
   posY: number;
   scale?: number;
+  rotate?: number;
 };
 
 export type TemplateSettings = {

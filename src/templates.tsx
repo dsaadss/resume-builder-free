@@ -191,7 +191,7 @@ export const ClassicTemplate = ({ data }: { data: ResumeData }) => {
         {activeImg && (
           <div className="flex justify-center mb-8">
             <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white/20 shadow-lg shrink-0">
-              <img src={activeImg.dataUrl} alt="Profile" className="w-full h-full object-cover" style={{ objectPosition: `${activeImg.posX}% ${activeImg.posY}%`, transform: `scale(${activeImg.scale && activeImg.scale > 0 ? activeImg.scale / 100 : 1})` }} />
+              <img src={activeImg.dataUrl} alt="Profile" className="w-full h-full object-cover" style={{ transform: `translate(${(activeImg.posX - 50)}%, ${(activeImg.posY - 50)}%) scale(${activeImg.scale && activeImg.scale > 0 ? activeImg.scale / 100 : 1}) rotate(${activeImg.rotate || 0}deg)` }} />
             </div>
           </div>
         )}
@@ -249,7 +249,7 @@ export const ModernTemplate = ({ data }: { data: ResumeData }) => {
       <div className="text-white flex items-center gap-8" style={{ backgroundColor: data.themeColor, padding: globalPadStr }}>
         {activeImg && (
           <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white/20 shadow-lg shrink-0">
-            <img src={activeImg.dataUrl} alt="Profile" className="w-full h-full object-cover" style={{ objectPosition: `${activeImg.posX}% ${activeImg.posY}%`, transform: `scale(${activeImg.scale && activeImg.scale > 0 ? activeImg.scale / 100 : 1})` }} />
+            <img src={activeImg.dataUrl} alt="Profile" className="w-full h-full object-cover" style={{ transform: `translate(${(activeImg.posX - 50)}%, ${(activeImg.posY - 50)}%) scale(${activeImg.scale && activeImg.scale > 0 ? activeImg.scale / 100 : 1}) rotate(${activeImg.rotate || 0}deg)` }} />
           </div>
         )}
         <div className="flex-1">

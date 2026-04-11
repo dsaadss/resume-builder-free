@@ -205,7 +205,7 @@ export default function App() {
                       key={img.id} 
                       className={`relative w-24 h-24 rounded-full overflow-hidden border-4 transition-all group ${resumeData.personal.activeProfileImageId === img.id ? 'border-blue-500 shadow-md scale-110' : 'border-transparent hover:border-blue-300'}`}
                     >
-                      <img src={img.dataUrl} alt="Profile" className="w-full h-full object-cover" style={{ objectPosition: `${img.posX}% ${img.posY}%`, transform: `scale(${img.scale && img.scale > 0 ? (img.scale / 100) : 1})` }} />
+                      <img src={img.dataUrl} alt="Profile" className="w-full h-full object-cover" style={{ transform: `translate(${(img.posX - 50)}%, ${(img.posY - 50)}%) scale(${img.scale && img.scale > 0 ? (img.scale / 100) : 1}) rotate(${img.rotate || 0}deg)` }} />
                       <div className="absolute inset-0 bg-black/60 flex items-center justify-between px-3 opacity-0 group-hover:opacity-100 transition z-10">
                         <button 
                           type="button" 
@@ -278,6 +278,20 @@ export default function App() {
                           onChange={(e) => {
                             const newImages = resumeData.personal.profileImages.map(img => 
                               img.id === resumeData.personal.activeProfileImageId ? { ...img, posY: parseInt(e.target.value) } : img
+                            );
+                            reset({ ...watch(), personal: { ...watch('personal'), profileImages: newImages } });
+                          }}
+                          className="flex-1 cursor-ew-resize accent-blue-600"
+                        />
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs font-medium text-gray-500 w-16">סיבוב (Rotate)</span>
+                        <input 
+                          type="range" min="-180" max="180" 
+                          value={resumeData.personal.profileImages.find(i => i.id === resumeData.personal.activeProfileImageId)?.rotate || 0}
+                          onChange={(e) => {
+                            const newImages = resumeData.personal.profileImages.map(img => 
+                              img.id === resumeData.personal.activeProfileImageId ? { ...img, rotate: parseInt(e.target.value) } : img
                             );
                             reset({ ...watch(), personal: { ...watch('personal'), profileImages: newImages } });
                           }}

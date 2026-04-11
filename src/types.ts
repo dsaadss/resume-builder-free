@@ -3,13 +3,16 @@ export type ProfileImageInfo = {
   dataUrl: string;
   posX: number;
   posY: number;
+  scale?: number;
 };
 
 export type TemplateSettings = {
   padding: number;
+  sectionPadding?: Record<string, number>;
   headlines: Record<string, string>;
   sidebarOrder: string[];
   mainOrder: string[];
+  skillsFormat?: 'bullets' | 'comma-separated';
 };
 
 export type ResumeData = {
@@ -44,9 +47,11 @@ export const initialResumeData: ResumeData = {
   themeColor: "#001f3f",
   settings: {
     padding: 8,
+    sectionPadding: {},
     headlines: {},
     sidebarOrder: ['personal', 'links', 'skills', 'languages'],
-    mainOrder: ['summary', 'experience', 'education', 'courses', 'military', 'projects']
+    mainOrder: ['summary', 'experience', 'education', 'courses', 'military', 'projects'],
+    skillsFormat: 'bullets'
   },
   personal: {
     firstName: "ירדן שלום",
@@ -136,9 +141,11 @@ export const emptyResumeData: ResumeData = {
   template: "classic",
   settings: {
     padding: 8,
+    sectionPadding: {},
     headlines: {},
     sidebarOrder: ['personal', 'links', 'skills', 'languages'],
-    mainOrder: ['summary', 'experience', 'education', 'courses', 'military', 'projects']
+    mainOrder: ['summary', 'experience', 'education', 'courses', 'military', 'projects'],
+    skillsFormat: 'bullets'
   },
   personal: {
     firstName: "",

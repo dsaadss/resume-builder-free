@@ -2,16 +2,21 @@ import React from 'react';
 import { ResumeData } from './types';
 
 // Helper for bullet points that auto-aligns based on language
-const BulletList = ({ items }: { items: { id: string, name: string }[] }) => (
-  <ul className="space-y-2 text-sm list-none p-0 m-0">
-    {items.map(item => (
-      <li key={item.id} dir="auto" className="flex items-center gap-2">
-        <span className="w-2 h-2 rounded-full bg-current opacity-80 shrink-0" aria-hidden="true"></span>
-        <span className="leading-tight">{item.name}</span>
-      </li>
-    ))}
-  </ul>
-);
+const BulletList = ({ items, format }: { items: { id: string, name: string }[], format?: string }) => {
+  if (format === 'comma-separated') {
+    return <div className="text-sm leading-relaxed" dir="auto">{items.map(i => i.name).join(', ')}</div>;
+  }
+  return (
+    <ul className="space-y-2 text-sm list-none p-0 m-0">
+      {items.map(item => (
+        <li key={item.id} dir="auto" className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-current opacity-80 shrink-0" aria-hidden="true"></span>
+          <span className="leading-tight">{item.name}</span>
+        </li>
+      ))}
+    </ul>
+  );
+};
 
 const FormattedDescription = ({ text, className }: { text: string, className?: string }) => {
   if (!text) return null;
@@ -28,6 +33,13 @@ const FormattedDescription = ({ text, className }: { text: string, className?: s
   return <div className={`mt-1 whitespace-pre-wrap ${className || ''}`}>{text.replace(/^[-*•]\s*/, '')}</div>;
 };
 
+const getPad = (data: ResumeData, key: string) => {
+  // Check section specific padding first, fallback to global padding, fallback to 8
+  const padVal = data.settings?.sectionPadding?.[key];
+  const finalVal = padVal !== undefined ? padVal : (data.settings?.padding ?? 8);
+  return `${finalVal * 4}px`;
+};
+
 // --- Block Generators ---
 // These ensure we can map over mainOrder / sidebarOrder with all their unique styles.
 
@@ -35,10 +47,12 @@ const generateMainBlocks = (data: ResumeData, templateClassTheme: string) => {
   const h = data.settings?.headlines || {};
   return {
     summary: data.summary ? (
-      <p className="text-sm text-gray-800 leading-relaxed mb-8 whitespace-pre-wrap">{data.summary}</p>
+      <div style={{ paddingBottom: getPad(data, 'summary') }}>
+        <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">{data.summary}</p>
+      </div>
     ) : null,
     experience: data.experience.length > 0 ? (
-      <section className="mb-6">
+      <section style={{ paddingBottom: getPad(data, 'experience') }}>
         <h3 className={templateClassTheme} style={{ color: data.themeColor, borderColor: data.themeColor }}>{h.experience || 'ניסיון תעסוקתי'}</h3>
         {data.experience.map(exp => (
           <article key={exp.id} className="mb-4">
@@ -52,7 +66,7 @@ const generateMainBlocks = (data: ResumeData, templateClassTheme: string) => {
       </section>
     ) : null,
     education: data.education.length > 0 ? (
-      <section className="mb-6">
+      <section style={{ paddingBottom: getPad(data, 'education') }}>
         <h3 className={templateClassTheme} style={{ color: data.themeColor, borderColor: data.themeColor }}>{h.education || 'השכלה'}</h3>
         {data.education.map(edu => (
           <article key={edu.id} className="mb-3">
@@ -66,7 +80,7 @@ const generateMainBlocks = (data: ResumeData, templateClassTheme: string) => {
       </section>
     ) : null,
     courses: data.courses.length > 0 ? (
-      <div className="mb-6">
+      <div style={{ paddingBottom: getPad(data, 'courses') }}>
         <h3 className={templateClassTheme} style={{ color: data.themeColor, borderColor: data.themeColor }}>{h.courses || 'קורסים'}</h3>
         <div className="space-y-1 text-sm">
           {data.courses.map(course => (
@@ -79,7 +93,7 @@ const generateMainBlocks = (data: ResumeData, templateClassTheme: string) => {
       </div>
     ) : null,
     military: data.military.length > 0 ? (
-      <div className="mb-6">
+      <div style={{ paddingBottom: getPad(data, 'military') }}>
         <h3 className={templateClassTheme} style={{ color: data.themeColor, borderColor: data.themeColor }}>{h.military || 'שירות צבאי'}</h3>
         {data.military.map(mil => (
           <div key={mil.id} className="mb-3">
@@ -93,7 +107,7 @@ const generateMainBlocks = (data: ResumeData, templateClassTheme: string) => {
       </div>
     ) : null,
     projects: data.projects.length > 0 ? (
-      <div className="mb-6">
+      <div style={{ paddingBottom: getPad(data, 'projects') }}>
         <h3 className={templateClassTheme} style={{ color: data.themeColor, borderColor: data.themeColor }}>{h.projects || 'פרוייקטים'}</h3>
         {data.projects.map(proj => (
           <div key={proj.id} className="mb-3">
@@ -109,13 +123,13 @@ const generateMainBlocks = (data: ResumeData, templateClassTheme: string) => {
 
 export const ClassicTemplate = ({ data }: { data: ResumeData }) => {
   const activeImg = data.personal.profileImages?.find(i => i.id === data.personal.activeProfileImageId);
-  const pad = (data.settings?.padding ?? 8) * 4;
+  const globalPadStr = `${(data.settings?.padding ?? 8) * 4}px`;
   const h = data.settings?.headlines || {};
   
   const sidebarBlocks: Record<string, React.ReactNode> = {
     personal: (
-      <div className="mb-8">
-        <h3 className="text-lg font-bold border-b border-white/30 pb-1 mb-4 text-right">פרטים אישיים</h3>
+      <div style={{ paddingBottom: getPad(data, 'personal') }}>
+        <h3 className="text-lg font-bold border-b border-white/30 pb-1 mb-4 text-right">{h.personal || 'פרטים אישיים'}</h3>
         <div className="space-y-3 text-sm text-right" dir="ltr">
           {data.personal.phone && (
             <div className="flex items-center justify-end gap-2">
@@ -145,7 +159,7 @@ export const ClassicTemplate = ({ data }: { data: ResumeData }) => {
       </div>
     ),
     links: data.links.length > 0 ? (
-      <div className="mb-8">
+      <div style={{ paddingBottom: getPad(data, 'links') }}>
         <h3 className="text-lg font-bold border-b border-white/30 pb-1 mb-4 text-right">{h.links || 'קישורים'}</h3>
         <div className="space-y-2 text-sm text-right" dir="ltr">
           {data.links.map(link => (
@@ -155,13 +169,13 @@ export const ClassicTemplate = ({ data }: { data: ResumeData }) => {
       </div>
     ) : null,
     skills: data.skills.length > 0 ? (
-      <div className="mb-8">
+      <div style={{ paddingBottom: getPad(data, 'skills') }}>
         <h3 className="text-lg font-bold border-b border-white/30 pb-1 mb-4 text-right">{h.skills || 'מיומנויות'}</h3>
-        <BulletList items={data.skills} />
+        <BulletList items={data.skills} format={data.settings?.skillsFormat} />
       </div>
     ) : null,
     languages: data.languages.length > 0 ? (
-      <div className="mb-8">
+      <div style={{ paddingBottom: getPad(data, 'languages') }}>
         <h3 className="text-lg font-bold border-b border-white/30 pb-1 mb-4 text-right">{h.languages || 'שפות'}</h3>
         <BulletList items={data.languages} />
       </div>
@@ -173,11 +187,11 @@ export const ClassicTemplate = ({ data }: { data: ResumeData }) => {
   return (
     <div className="flex w-full min-h-[297mm] bg-white text-gray-900" dir="rtl">
       {/* Sidebar */}
-      <div className="w-1/3 text-white" style={{ backgroundColor: data.themeColor, padding: `${pad}px` }}>
+      <div className="w-1/3 text-white" style={{ backgroundColor: data.themeColor, padding: globalPadStr }}>
         {activeImg && (
           <div className="flex justify-center mb-8">
             <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white/20 shadow-lg shrink-0">
-              <img src={activeImg.dataUrl} alt="Profile" className="w-full h-full object-cover" style={{ objectPosition: `${activeImg.posX}% ${activeImg.posY}%` }} />
+              <img src={activeImg.dataUrl} alt="Profile" className="w-full h-full object-cover" style={{ objectPosition: `${activeImg.posX}% ${activeImg.posY}%`, transform: `scale(${activeImg.scale && activeImg.scale > 0 ? activeImg.scale / 100 : 1})` }} />
             </div>
           </div>
         )}
@@ -185,7 +199,7 @@ export const ClassicTemplate = ({ data }: { data: ResumeData }) => {
       </div>
 
       {/* Main */}
-      <div className="w-2/3" style={{ padding: `${pad}px` }}>
+      <div className="w-2/3" style={{ padding: globalPadStr }}>
         <h1 className="text-4xl font-bold mb-1" style={{ color: data.themeColor }}>{data.personal.firstName} {data.personal.lastName}</h1>
         <h2 className="text-xl text-gray-600 mb-6">{data.personal.title}</h2>
         {data.settings?.mainOrder?.map(key => <React.Fragment key={key}>{mainBlocks[key]}</React.Fragment>)}
@@ -197,24 +211,24 @@ export const ClassicTemplate = ({ data }: { data: ResumeData }) => {
 
 export const ModernTemplate = ({ data }: { data: ResumeData }) => {
   const activeImg = data.personal.profileImages?.find(i => i.id === data.personal.activeProfileImageId);
-  const pad = (data.settings?.padding ?? 8) * 4;
+  const globalPadStr = `${(data.settings?.padding ?? 8) * 4}px`;
   const h = data.settings?.headlines || {};
 
   const sidebarBlocks: Record<string, React.ReactNode> = {
     skills: data.skills.length > 0 ? (
-      <div>
+      <div style={{ paddingBottom: getPad(data, 'skills') }}>
         <h3 className="text-lg font-bold border-b pb-1 mb-4" style={{ color: data.themeColor, borderColor: data.themeColor }}>{h.skills || 'מיומנויות'}</h3>
-        <div className="text-gray-700"><BulletList items={data.skills} /></div>
+        <div className="text-gray-700"><BulletList items={data.skills} format={data.settings?.skillsFormat} /></div>
       </div>
     ) : null,
     languages: data.languages.length > 0 ? (
-      <div>
+      <div style={{ paddingBottom: getPad(data, 'languages') }}>
         <h3 className="text-lg font-bold border-b pb-1 mb-4" style={{ color: data.themeColor, borderColor: data.themeColor }}>{h.languages || 'שפות'}</h3>
         <div className="text-gray-700"><BulletList items={data.languages} /></div>
       </div>
     ) : null,
     links: data.links.length > 0 ? (
-      <div>
+      <div style={{ paddingBottom: getPad(data, 'links') }}>
         <h3 className="text-lg font-bold border-b pb-1 mb-4" style={{ color: data.themeColor, borderColor: data.themeColor }}>{h.links || 'קישורים'}</h3>
         <div className="space-y-2 text-sm text-gray-700" dir="ltr">
           {data.links.map(link => (
@@ -232,10 +246,10 @@ export const ModernTemplate = ({ data }: { data: ResumeData }) => {
   return (
     <div className="w-full min-h-[297mm] bg-white text-gray-900 flex flex-col" dir="rtl">
       {/* Header */}
-      <div className="text-white flex items-center gap-8" style={{ backgroundColor: data.themeColor, padding: `${pad}px` }}>
+      <div className="text-white flex items-center gap-8" style={{ backgroundColor: data.themeColor, padding: globalPadStr }}>
         {activeImg && (
           <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white/20 shadow-lg shrink-0">
-            <img src={activeImg.dataUrl} alt="Profile" className="w-full h-full object-cover" style={{ objectPosition: `${activeImg.posX}% ${activeImg.posY}%` }} />
+            <img src={activeImg.dataUrl} alt="Profile" className="w-full h-full object-cover" style={{ objectPosition: `${activeImg.posX}% ${activeImg.posY}%`, transform: `scale(${activeImg.scale && activeImg.scale > 0 ? activeImg.scale / 100 : 1})` }} />
           </div>
         )}
         <div className="flex-1">
@@ -249,13 +263,13 @@ export const ModernTemplate = ({ data }: { data: ResumeData }) => {
         </div>
       </div>
 
-      <div className="flex flex-1 gap-8" style={{ padding: `${pad}px` }}>
+      <div className="flex flex-1 gap-8" style={{ padding: globalPadStr }}>
         {/* Main Content */}
         <div className="w-2/3">
           {data.settings?.mainOrder?.map(key => <React.Fragment key={key}>{mainBlocks[key]}</React.Fragment>)}
         </div>
         {/* Sidebar */}
-        <div className="w-1/3 space-y-8">
+        <div className="w-1/3">
           {data.settings?.sidebarOrder?.map(key => <React.Fragment key={key}>{sidebarBlocks[key]}</React.Fragment>)}
         </div>
       </div>
@@ -273,13 +287,13 @@ export const MinimalistTemplate = ({ data }: { data: ResumeData }) => {
 
   const sidebarBlocks: Record<string, React.ReactNode> = {
     skills: data.skills.length > 0 ? (
-      <div>
+      <div style={{ paddingBottom: getPad(data, 'skills') }}>
         <h3 className="text-lg font-bold border-b pb-1 mb-4 uppercase tracking-wider text-gray-900" style={{ borderColor: data.themeColor }}>{h.skills || 'מיומנויות'}</h3>
-        <div className="text-gray-700"><BulletList items={data.skills} /></div>
+        <div className="text-gray-700"><BulletList items={data.skills} format={data.settings?.skillsFormat} /></div>
       </div>
     ) : null,
     languages: data.languages.length > 0 ? (
-      <div>
+      <div style={{ paddingBottom: getPad(data, 'languages') }}>
         <h3 className="text-lg font-bold border-b pb-1 mb-4 uppercase tracking-wider text-gray-900" style={{ borderColor: data.themeColor }}>{h.languages || 'שפות'}</h3>
         <div className="text-gray-700"><BulletList items={data.languages} /></div>
       </div>
@@ -307,7 +321,7 @@ export const MinimalistTemplate = ({ data }: { data: ResumeData }) => {
         )}
       </div>
 
-      <div className="grid grid-cols-1 gap-8">
+      <div className="grid grid-cols-1 gap-1">
         {data.settings?.mainOrder?.map(key => <React.Fragment key={key}>{mainBlocks[key]}</React.Fragment>)}
 
         <div className="grid grid-cols-2 gap-8">

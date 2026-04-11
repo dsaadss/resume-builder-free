@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
-import { Upload, Printer, Plus, Trash2, GripVertical } from 'lucide-react';
+import { Upload, Printer, Plus, Trash2, GripVertical, Check } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import * as pdfjsLib from 'pdfjs-dist';
 
@@ -53,16 +53,27 @@ export default function App() {
   };
 
   const FormSectionHeader = ({ title, orderKey, sectionId, size = 'xl', children }: { title: string, orderKey: 'mainOrder' | 'sidebarOrder', sectionId: string, size?: 'lg' | 'xl', children?: React.ReactNode }) => (
-    <div className="flex justify-between items-center mb-4 border-b pb-2">
-      <div className="flex items-center gap-3">
-        <h2 className={`text-${size} font-semibold text-gray-700`}>{title}</h2>
-        <div className="flex bg-gray-100 rounded-md overflow-hidden border border-gray-200" dir="ltr">
-          <button type="button" onClick={() => moveOrder(orderKey, sectionId, -1)} className="px-1.5 py-0.5 hover:bg-gray-200 text-gray-600 hover:text-black transition text-xs font-bold" title="הזז למעלה ב-PDF">↑</button>
-          <div className="w-px bg-gray-300"></div>
-          <button type="button" onClick={() => moveOrder(orderKey, sectionId, 1)} className="px-1.5 py-0.5 hover:bg-gray-200 text-gray-600 hover:text-black transition text-xs font-bold" title="הזז למטה ב-PDF">↓</button>
+    <div className="flex flex-col gap-2 mb-4 border-b pb-3">
+      <div className="flex justify-between items-center">
+        <div className="flex items-center gap-3 w-full">
+          <input 
+            {...register(`settings.headlines.${sectionId}`)}
+            placeholder={title}
+            className={`text-${size} font-semibold text-gray-700 bg-transparent border-b border-transparent focus:border-blue-500 focus:outline-none hover:bg-gray-50 transition p-1 -m-1 min-w-[120px] max-w-[200px]`}
+          />
+          <div className="flex bg-gray-100 rounded-md overflow-hidden border border-gray-200" dir="ltr">
+            <button type="button" onClick={() => moveOrder(orderKey, sectionId, -1)} className="px-2 py-1 hover:bg-gray-200 text-gray-700 hover:text-black transition text-sm font-black" title="הזז למעלה ב-PDF">↑</button>
+            <div className="w-px bg-gray-300"></div>
+            <button type="button" onClick={() => moveOrder(orderKey, sectionId, 1)} className="px-2 py-1 hover:bg-gray-200 text-gray-700 hover:text-black transition text-sm font-black" title="הזז למטה ב-PDF">↓</button>
+          </div>
         </div>
+        {children}
       </div>
-      {children}
+      <div className="flex items-center gap-2 text-xs text-gray-500 bg-gray-50 p-1.5 rounded-lg w-fit mt-1 border border-gray-100">
+        <span className="font-medium text-gray-600">ריווח עליון: צפוף</span>
+        <input type="range" min="0" max="16" defaultValue={8} {...register(`settings.sectionPadding.${sectionId}`, { valueAsNumber: true })} className="w-24 accent-blue-600" />
+        <span className="font-medium text-gray-600">מרווח</span>
+      </div>
     </div>
   );
 
@@ -171,25 +182,11 @@ export default function App() {
             <h2 className="text-xl font-semibold mb-4 text-gray-700 border-b pb-2">הגדרות מתקדמות</h2>
             <div className="grid grid-cols-1 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">ריווח כללי במסמך (Padding)</label>
+                <label className="block text-sm font-medium text-gray-600 mb-1">ריווח שוליים כללי (Padding)</label>
                 <div className="flex items-center gap-3">
-                  <span className="text-xs text-gray-400">צפוף</span>
+                  <span className="text-xs text-gray-500 font-medium">צפוף</span>
                   <input type="range" min="0" max="16" {...register('settings.padding', { valueAsNumber: true })} className="flex-1 accent-blue-600" />
-                  <span className="text-xs text-gray-400">מרווח</span>
-                </div>
-              </div>
-              
-              <div className="mt-2 bg-gray-50 border rounded-lg p-3">
-                <label className="block text-sm font-bold text-gray-700 mb-2">שינוי שמות כותרות (השאר ריק לברירת מחדל)</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <input {...register('settings.headlines.skills')} placeholder="מיומנויות (ברירת מחדל)" className="border rounded p-1.5 text-xs focus:ring-1 focus:ring-blue-500 outline-none" />
-                  <input {...register('settings.headlines.experience')} placeholder="ניסיון תעסוקתי (ברירת מחדל)" className="border rounded p-1.5 text-xs focus:ring-1 focus:ring-blue-500 outline-none" />
-                  <input {...register('settings.headlines.education')} placeholder="השכלה (ברירת מחדל)" className="border rounded p-1.5 text-xs focus:ring-1 focus:ring-blue-500 outline-none" />
-                  <input {...register('settings.headlines.courses')} placeholder="קורסים (ברירת מחדל)" className="border rounded p-1.5 text-xs focus:ring-1 focus:ring-blue-500 outline-none" />
-                  <input {...register('settings.headlines.military')} placeholder="שירות צבאי (ברירת מחדל)" className="border rounded p-1.5 text-xs focus:ring-1 focus:ring-blue-500 outline-none" />
-                  <input {...register('settings.headlines.projects')} placeholder="פרוייקטים (ברירת מחדל)" className="border rounded p-1.5 text-xs focus:ring-1 focus:ring-blue-500 outline-none" />
-                  <input {...register('settings.headlines.languages')} placeholder="שפות (ברירת מחדל)" className="border rounded p-1.5 text-xs focus:ring-1 focus:ring-blue-500 outline-none" />
-                  <input {...register('settings.headlines.links')} placeholder="קישורים (ברירת מחדל)" className="border rounded p-1.5 text-xs focus:ring-1 focus:ring-blue-500 outline-none" />
+                  <span className="text-xs text-gray-500 font-medium">מרווח</span>
                 </div>
               </div>
             </div>
@@ -206,22 +203,33 @@ export default function App() {
                   {resumeData.personal.profileImages?.map(img => (
                     <div 
                       key={img.id} 
-                      onClick={() => reset({ ...watch(), personal: { ...watch('personal'), activeProfileImageId: img.id } })}
-                      className={`relative w-16 h-16 rounded-full overflow-hidden cursor-pointer border-4 transition-all ${resumeData.personal.activeProfileImageId === img.id ? 'border-blue-500 shadow-md scale-110' : 'border-transparent hover:border-blue-300'}`}
+                      className={`relative w-24 h-24 rounded-full overflow-hidden border-4 transition-all group ${resumeData.personal.activeProfileImageId === img.id ? 'border-blue-500 shadow-md scale-110' : 'border-transparent hover:border-blue-300'}`}
                     >
-                      <img src={img.dataUrl} alt="Profile" className="w-full h-full object-cover" style={{ objectPosition: `${img.posX}% ${img.posY}%` }} />
-                      <button 
-                        type="button" 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const newImages = resumeData.personal.profileImages.filter(i => i.id !== img.id);
-                          const newActiveId = newImages.length > 0 ? newImages[0].id : undefined;
-                          reset({ ...watch(), personal: { ...watch('personal'), profileImages: newImages, activeProfileImageId: newActiveId } });
-                        }} 
-                        className="absolute inset-0 bg-black/60 flex items-center justify-center text-white opacity-0 hover:opacity-100 transition"
-                      >
-                        <Trash2 size={16} />
-                      </button>
+                      <img src={img.dataUrl} alt="Profile" className="w-full h-full object-cover" style={{ objectPosition: `${img.posX}% ${img.posY}%`, transform: `scale(${img.scale && img.scale > 0 ? (img.scale / 100) : 1})` }} />
+                      <div className="absolute inset-0 bg-black/60 flex items-center justify-between px-3 opacity-0 group-hover:opacity-100 transition z-10">
+                        <button 
+                          type="button" 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const newImages = resumeData.personal.profileImages.filter(i => i.id !== img.id);
+                            const newActiveId = newImages.length > 0 ? newImages[0].id : undefined;
+                            reset({ ...watch(), personal: { ...watch('personal'), profileImages: newImages, activeProfileImageId: newActiveId } });
+                          }} 
+                          className="text-red-400 hover:text-red-300 transition" title="מחק"
+                        >
+                          <Trash2 size={22} />
+                        </button>
+                        <button 
+                          type="button" 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            reset({ ...watch(), personal: { ...watch('personal'), activeProfileImageId: img.id } });
+                          }} 
+                          className="text-green-400 hover:text-green-300 transition" title="בחר"
+                        >
+                          <Check size={26} strokeWidth={3} />
+                        </button>
+                      </div>
                     </div>
                   ))}
                   
@@ -270,6 +278,20 @@ export default function App() {
                           onChange={(e) => {
                             const newImages = resumeData.personal.profileImages.map(img => 
                               img.id === resumeData.personal.activeProfileImageId ? { ...img, posY: parseInt(e.target.value) } : img
+                            );
+                            reset({ ...watch(), personal: { ...watch('personal'), profileImages: newImages } });
+                          }}
+                          className="flex-1 cursor-ew-resize accent-blue-600"
+                        />
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs font-medium text-gray-500 w-16">זום (Scale)</span>
+                        <input 
+                          type="range" min="100" max="300" 
+                          value={resumeData.personal.profileImages.find(i => i.id === resumeData.personal.activeProfileImageId)?.scale || 100}
+                          onChange={(e) => {
+                            const newImages = resumeData.personal.profileImages.map(img => 
+                              img.id === resumeData.personal.activeProfileImageId ? { ...img, scale: parseInt(e.target.value) } : img
                             );
                             reset({ ...watch(), personal: { ...watch('personal'), profileImages: newImages } });
                           }}
@@ -547,6 +569,14 @@ export default function App() {
                   <Plus size={16} /> הוסף
                 </button>
               </FormSectionHeader>
+              <div className="flex gap-4 mb-3 pb-2 border-b border-gray-100">
+                <label className="flex items-center gap-1.5 text-xs text-gray-600 cursor-pointer hover:text-blue-600">
+                  <input type="radio" value="bullets" {...register('settings.skillsFormat')} className="accent-blue-600" /> רשימה ארוכה
+                </label>
+                <label className="flex items-center gap-1.5 text-xs text-gray-600 cursor-pointer hover:text-blue-600">
+                  <input type="radio" value="comma-separated" {...register('settings.skillsFormat')} className="accent-blue-600" /> פסקה חסכונית (פסיקים)
+                </label>
+              </div>
               <div className="space-y-2">
                 {resumeData.skills.map((skill, index) => (
                   <div key={skill.id} className="flex gap-2 items-center">

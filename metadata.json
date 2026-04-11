@@ -1,0 +1,5 @@
+{
+  "name": "Resume Builder AI",
+  "description": "A Hebrew resume builder with AI parsing from PDF/Images and PDF export.",
+  "requestFramePermissions": []
+}

@@ -236,10 +236,20 @@ export default function App() {
         className="w-full shrink-0 p-6 overflow-y-auto h-screen bg-white dark:bg-slate-950 shadow-2xl z-10 no-print border-l border-slate-200 dark:border-slate-900 transition-colors duration-300"
         style={{ width: typeof window !== 'undefined' && window.innerWidth >= 768 ? `${formWidth}%` : '100%' }}
       >
-        <div className="sticky top-0 z-[60] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 bg-white/95 dark:bg-slate-950/95 backdrop-blur-md p-6 rounded-b-[2.5rem] -mx-6 -mt-6 border-b border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden group">
+        <div className="sticky top-0 z-[60] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-8 bg-white/95 dark:bg-slate-950/95 backdrop-blur-md p-4 sm:p-6 rounded-b-3xl sm:rounded-b-[2.5rem] -mx-6 -mt-6 border-b border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full -translate-y-16 translate-x-16 group-hover:scale-110 transition-transform"></div>
-          <div className="flex flex-col gap-1.5 relative z-10">
-            <h1 className="text-3xl font-black text-slate-800 dark:text-white shrink-0 tracking-tight">בונה קורות חיים</h1>
+          <div className="flex flex-col gap-1 relative z-10">
+            <div className="flex items-center justify-between w-full sm:w-auto gap-4">
+              <h1 className="text-2xl sm:text-3xl font-black text-slate-800 dark:text-white shrink-0 tracking-tight">בונה קורות חיים</h1>
+              <button 
+                type="button"
+                onClick={() => document.getElementById('preview-section')?.scrollIntoView({ behavior: 'smooth' })}
+                className="flex sm:hidden items-center gap-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider active:scale-95 transition-all"
+              >
+                <Printer size={14} />
+                צפה בתצוגה
+              </button>
+            </div>
             <div className="flex flex-wrap items-center gap-4 mt-2">
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">טען פרופילים</span>
@@ -1021,6 +1031,7 @@ export default function App() {
 
       {/* Preview Section (Left) */}
       <div 
+        id="preview-section"
         className="bg-slate-100 dark:bg-slate-900 p-4 md:p-12 overflow-y-auto h-screen flex justify-center items-start print:p-0 print:m-0 print:w-full print:h-auto print:block print:bg-white print:overflow-visible shrink-0 shadow-inner"
         style={{ width: typeof window !== 'undefined' && window.innerWidth >= 768 ? `${100 - formWidth}%` : '100%' }}
       >

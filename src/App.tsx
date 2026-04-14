@@ -149,8 +149,12 @@ export default function App() {
   const [fakeIndex, setFakeIndex] = useState(0);
   const [formWidth, setFormWidth] = useState(50);
   const [isTranslatingAll, setIsTranslatingAll] = useState(false);
-  const [isGeneratingDual, setIsGeneratingDual] = useState(false);
-  const [mirroredData, setMirroredData] = useState<ResumeData | null>(null);
+  
+  const [storedHe, setStoredHe] = useState<ResumeData | null>(null);
+  const [storedEn, setStoredEn] = useState<ResumeData | null>(null);
+  const [isEnValidated, setIsEnValidated] = useState(false);
+  const [includeHe, setIncludeHe] = useState(true);
+  const [includeEn, setIncludeEn] = useState(false);
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('darkMode');
@@ -171,6 +175,16 @@ export default function App() {
       localStorage.setItem('darkMode', darkMode.toString());
     }
   }, [darkMode]);
+
+  // Load persistence states on mount
+  useEffect(() => {
+    const sHe = localStorage.getItem('storedHe');
+    const sEn = localStorage.getItem('storedEn');
+    const isValid = localStorage.getItem('isEnValidated');
+    if (sHe) setStoredHe(JSON.parse(sHe));
+    if (sEn) setStoredEn(JSON.parse(sEn));
+    if (isValid) setIsEnValidated(JSON.parse(isValid));
+  }, []);
 
   const { register, control, handleSubmit, reset, watch, setValue } = useForm<ResumeData>({
     defaultValues: loadSavedData(),
@@ -218,31 +232,44 @@ export default function App() {
 
   const handleTranslateAll = async () => {
     setIsTranslatingAll(true);
-    const targetLang = resumeData.language === 'en' ? 'he' : 'en';
+    const currentLang = resumeData.language || 'he';
+    const targetLang = currentLang === 'en' ? 'he' : 'en';
+
+    // 1. Save current state to the active slot
+    if (currentLang === 'he') setStoredHe(resumeData);
+    else setStoredEn(resumeData);
+
+    // 2. Load the other slot if it exists
+    const otherData = targetLang === 'en' ? storedEn : storedHe;
+    if (otherData) {
+      reset(otherData);
+      setIsTranslatingAll(false);
+      setConfirmAction(null);
+      return;
+    }
+
+    // 3. If target slot is empty, perform translation
     const translated = await getTranslatedData(resumeData, targetLang);
     reset(translated);
+    if (targetLang === 'en') {
+      setStoredEn(translated);
+      setIsEnValidated(false);
+    } else {
+      setStoredHe(translated);
+    }
+    
     setIsTranslatingAll(false);
     setConfirmAction(null);
   };
 
-  const handlePrintBoth = async () => {
-    setIsGeneratingDual(true);
-    const targetLang = resumeData.language === 'en' ? 'he' : 'en';
-    const mirror = await getTranslatedData(resumeData, targetLang);
-    setMirroredData(mirror);
-    setIsGeneratingDual(false);
-    
-    // Allow React to render the mirror data before printing
-    setTimeout(() => {
-      window.print();
-      setMirroredData(null);
-    }, 500);
-  };
 
   useEffect(() => {
     document.title = `Resume_${resumeData.personal.firstName}_${resumeData.personal.lastName}`;
     localStorage.setItem('resumeData', JSON.stringify(resumeData));
-  }, [resumeData]);
+    if (storedHe) localStorage.setItem('storedHe', JSON.stringify(storedHe));
+    if (storedEn) localStorage.setItem('storedEn', JSON.stringify(storedEn));
+    localStorage.setItem('isEnValidated', JSON.stringify(isEnValidated));
+  }, [resumeData, storedHe, storedEn, isEnValidated]);
 
   const moveOrder = (key: 'mainOrder' | 'sidebarOrder', id: string, dir: number) => {
     const list = [...(resumeData.settings[key] || [])];
@@ -356,30 +383,70 @@ export default function App() {
               </button>
             </div>
           </div>
-          <div className="flex gap-2 relative z-10 w-full sm:w-auto">
-            <button type="button" onClick={() => setConfirmAction('clear')} className="flex-1 sm:flex-none bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-300 border border-slate-200 dark:border-slate-700 px-4 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-700 dark:hover:text-white transition-all text-xs font-bold shadow-sm active:scale-95">
-              נקה
-            </button>
-            <button type="button" onClick={() => setConfirmAction('reset')} className="flex-1 sm:flex-none bg-red-500/5 text-red-500 border border-red-500/10 px-4 py-2.5 rounded-xl hover:bg-red-500 hover:text-white transition-all text-xs font-bold active:scale-95" title="טען את קורות החיים של ירדן (לדוגמה)">
-              דוגמה
-            </button>
-            <button 
-              type="button"
-              onClick={() => handlePrintBoth()} 
-              disabled={isGeneratingDual}
-              className="flex-1 sm:flex-none bg-emerald-600 text-white px-4 py-2.5 rounded-xl flex items-center justify-center gap-2 hover:bg-emerald-500 transition-all shadow-lg shadow-emerald-500/20 active:scale-95 text-xs font-bold"
-            >
-              {isGeneratingDual ? <Loader2 size={16} className="animate-spin" /> : <Printer size={16} />}
-              <span className="whitespace-nowrap">הורד את שתיהן</span>
-            </button>
-            <button onClick={() => window.print()} className="flex-1 sm:flex-none bg-blue-600 text-white px-5 py-2.5 rounded-xl flex items-center justify-center gap-2 hover:bg-blue-500 transition-all shadow-lg shadow-blue-500/20 active:scale-95 font-bold">
-              <Printer size={18} />
-              <span className="whitespace-nowrap text-sm">הורד PDF</span>
-            </button>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 relative z-10 w-full sm:w-auto">
+            <div className="flex items-center gap-2 px-3 py-1 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl mr-1">
+              <label className="flex items-center gap-1.5 cursor-pointer select-none">
+                <input type="checkbox" checked={includeHe} onChange={e => setIncludeHe(e.target.checked)} className="w-3.5 h-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
+                <span className="text-[10px] font-black text-slate-600 dark:text-slate-400">עברית</span>
+              </label>
+              <div className="w-px h-3 bg-slate-200 dark:bg-slate-700 mx-1"></div>
+              <label className="flex items-center gap-1.5 cursor-pointer select-none relative group/enToggle">
+                <input 
+                  type="checkbox" 
+                  checked={includeEn} 
+                  disabled={!storedEn}
+                  onChange={e => setIncludeEn(e.target.checked)} 
+                  className={`w-3.5 h-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 ${!storedEn ? 'opacity-30' : ''}`} 
+                />
+                <span className={`text-[10px] font-black ${!storedEn ? 'text-slate-300 cursor-not-allowed' : 'text-slate-600 dark:text-slate-400'}`}>
+                  אנגלית {storedEn && !isEnValidated && <span className="text-amber-500 font-bold">*</span>}
+                </span>
+                {!storedEn && (
+                  <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[8px] px-2 py-1 rounded opacity-0 group-hover/enToggle:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+                    תרגם קודם לאנגלית
+                  </div>
+                )}
+              </label>
+            </div>
+            
+            <div className="flex gap-2">
+              <button type="button" onClick={() => setConfirmAction('clear')} className="flex-1 sm:flex-none bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-300 border border-slate-200 dark:border-slate-700 px-4 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-700 dark:hover:text-white transition-all text-xs font-bold shadow-sm active:scale-95">
+                נקה
+              </button>
+              <button onClick={() => {
+                if (includeEn && !isEnValidated) {
+                  if (!confirm('התרגום לאנגלית טרם אושר. להמשיך בהורדה?')) return;
+                }
+                window.print();
+              }} className="flex-x sm:flex-none bg-blue-600 text-white px-5 py-2.5 rounded-xl flex items-center justify-center gap-2 hover:bg-blue-500 transition-all shadow-lg shadow-blue-500/20 active:scale-95 font-bold">
+                <Printer size={18} />
+                <span className="whitespace-nowrap text-sm">הורד PDF</span>
+              </button>
+            </div>
           </div>
         </div>
 
         <form className="space-y-8">
+          {resumeData.language === 'en' && !isEnValidated && (
+            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 animate-in fade-in slide-in-from-top-4 duration-500">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-amber-100 dark:bg-amber-800/40 rounded-full flex items-center justify-center text-amber-600 dark:text-amber-400">
+                  <Languages size={20} />
+                </div>
+                <div>
+                  <h4 className="text-sm font-black text-amber-800 dark:text-amber-200">זהו תרגום אוטומטי</h4>
+                  <p className="text-xs text-amber-700 dark:text-amber-300">אנא ודאו שהכל תקין לפני ההורדה.</p>
+                </div>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setIsEnValidated(true)}
+                className="w-full sm:w-auto bg-amber-600 text-white px-4 py-2 rounded-xl text-xs font-black shadow-lg shadow-amber-600/20 hover:bg-amber-500 transition-all active:scale-95"
+              >
+                אישור תרגום
+              </button>
+            </div>
+          )}
           {/* Template Selection */}
           <section>
             <h2 className="text-xl font-black mb-4 text-slate-800 dark:text-slate-100 border-b border-slate-200 dark:border-slate-800 pb-2">תבנית</h2>
@@ -1118,7 +1185,7 @@ export default function App() {
             {/* Appendix */}
             <section className="col-span-1 md:col-span-2">
               <FormSectionHeader 
-                title="נספחים (גיליון ציונים)" 
+                title="הוסף דפי PDF" 
                 orderKey="sidebarOrder" 
                 sectionId="appendix"
                 register={register} 
@@ -1126,13 +1193,14 @@ export default function App() {
                 setValue={setValue} 
                 moveOrder={undefined as any}
               />
+              <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest -mt-4 mb-4">כגון: גיליון ציונים, דיפלומה, מכתבי המלצה</p>
               <div className="space-y-4">
                 <label className="cursor-pointer flex flex-col items-center justify-center gap-3 w-full border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-3xl p-10 bg-slate-50/50 dark:bg-slate-900/50 hover:bg-white dark:hover:bg-slate-900 hover:border-blue-500/50 dark:hover:border-blue-500/50 transition-all text-slate-400 dark:text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 active:scale-[0.98] group/upload shadow-sm">
                   <div className="w-14 h-14 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center shadow-md border border-slate-100 dark:border-slate-700 group-hover/upload:scale-110 transition-transform">
                     <Upload size={24} className="text-slate-400 group-hover/upload:text-blue-600 dark:group-hover/upload:text-blue-400 transition-colors" />
                   </div>
                   <div className="text-center">
-                    <span className="block font-black text-slate-700 dark:text-slate-300">העלה גיליון ציונים</span>
+                    <span className="block font-black text-slate-700 dark:text-slate-300">העלה קבצי PDF</span>
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">קבצי PDF בלבד</span>
                   </div>
                   <input type="file" accept=".pdf" className="hidden" onChange={handlePdfUpload} />
@@ -1184,15 +1252,23 @@ export default function App() {
       >
         <div className="transform scale-[0.6] sm:scale-[0.8] md:scale-[0.6] lg:scale-[0.8] xl:scale-100 origin-top print:transform-none print:scale-100 print:w-full print:h-auto print:m-0 print:p-0">
           <div className="bg-white shadow-2xl w-[210mm] min-h-[297mm] print:shadow-none print:m-0 print:p-0" ref={printRef}>
-            {resumeData.template === 'classic' && <ClassicTemplate data={resumeData} />}
-            {resumeData.template === 'modern' && <ModernTemplate data={resumeData} />}
-            {resumeData.template === 'minimalist' && <MinimalistTemplate data={resumeData} />}
+            {includeHe && (
+              <>
+                {(storedHe || (resumeData.language === 'he' ? resumeData : null)) && (
+                  <>
+                    {(storedHe || resumeData).template === 'classic' && <ClassicTemplate data={storedHe || resumeData} />}
+                    {(storedHe || resumeData).template === 'modern' && <ModernTemplate data={storedHe || resumeData} />}
+                    {(storedHe || resumeData).template === 'minimalist' && <MinimalistTemplate data={storedHe || resumeData} />}
+                  </>
+                )}
+              </>
+            )}
             
-            {mirroredData && (
+            {includeEn && storedEn && (
               <div className="break-before-page mt-8 print:mt-0">
-                {mirroredData.template === 'classic' && <ClassicTemplate data={mirroredData} />}
-                {mirroredData.template === 'modern' && <ModernTemplate data={mirroredData} />}
-                {mirroredData.template === 'minimalist' && <MinimalistTemplate data={mirroredData} />}
+                {storedEn.template === 'classic' && <ClassicTemplate data={storedEn} />}
+                {storedEn.template === 'modern' && <ModernTemplate data={storedEn} />}
+                {storedEn.template === 'minimalist' && <MinimalistTemplate data={storedEn} />}
               </div>
             )}
             

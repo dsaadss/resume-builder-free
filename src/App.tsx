@@ -149,6 +149,8 @@ export default function App() {
   const [fakeIndex, setFakeIndex] = useState(0);
   const [formWidth, setFormWidth] = useState(50);
   const [isTranslatingAll, setIsTranslatingAll] = useState(false);
+  const [isGeneratingDual, setIsGeneratingDual] = useState(false);
+  const [mirroredData, setMirroredData] = useState<ResumeData | null>(null);
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('darkMode');
@@ -177,13 +179,9 @@ export default function App() {
   const resumeData = watch();
   const printRef = useRef<HTMLDivElement>(null);
 
-  const handleTranslateAll = async () => {
-    setIsTranslatingAll(true);
-    const data = { ...resumeData };
-    const isCurrentlyHebrew = data.language !== 'en';
-    const sourceLang = isCurrentlyHebrew ? 'he' : 'en';
-    const targetLang = isCurrentlyHebrew ? 'en' : 'he';
-
+  const getTranslatedData = async (data: ResumeData, targetLang: 'he' | 'en'): Promise<ResumeData> => {
+    const sourceLang = targetLang === 'en' ? 'he' : 'en';
+    
     const translateDeep = async (obj: any): Promise<any> => {
       if (typeof obj === 'string') {
         const val = obj.trim();
@@ -213,11 +211,32 @@ export default function App() {
       return obj;
     };
 
-    const translatedData = await translateDeep(data);
-    translatedData.language = targetLang;
-    reset(translatedData);
+    const translated = await translateDeep(data);
+    translated.language = targetLang;
+    return translated;
+  };
+
+  const handleTranslateAll = async () => {
+    setIsTranslatingAll(true);
+    const targetLang = resumeData.language === 'en' ? 'he' : 'en';
+    const translated = await getTranslatedData(resumeData, targetLang);
+    reset(translated);
     setIsTranslatingAll(false);
     setConfirmAction(null);
+  };
+
+  const handlePrintBoth = async () => {
+    setIsGeneratingDual(true);
+    const targetLang = resumeData.language === 'en' ? 'he' : 'en';
+    const mirror = await getTranslatedData(resumeData, targetLang);
+    setMirroredData(mirror);
+    setIsGeneratingDual(false);
+    
+    // Allow React to render the mirror data before printing
+    setTimeout(() => {
+      window.print();
+      setMirroredData(null);
+    }, 500);
   };
 
   useEffect(() => {
@@ -344,7 +363,16 @@ export default function App() {
             <button type="button" onClick={() => setConfirmAction('reset')} className="flex-1 sm:flex-none bg-red-500/5 text-red-500 border border-red-500/10 px-4 py-2.5 rounded-xl hover:bg-red-500 hover:text-white transition-all text-xs font-bold active:scale-95" title="טען את קורות החיים של ירדן (לדוגמה)">
               דוגמה
             </button>
-            <button onClick={() => handlePrint()} className="flex-1 sm:flex-none bg-blue-600 text-white px-5 py-2.5 rounded-xl flex items-center justify-center gap-2 hover:bg-blue-500 transition-all shadow-lg shadow-blue-500/20 active:scale-95 font-bold">
+            <button 
+              type="button"
+              onClick={() => handlePrintBoth()} 
+              disabled={isGeneratingDual}
+              className="flex-1 sm:flex-none bg-emerald-600 text-white px-4 py-2.5 rounded-xl flex items-center justify-center gap-2 hover:bg-emerald-500 transition-all shadow-lg shadow-emerald-500/20 active:scale-95 text-xs font-bold"
+            >
+              {isGeneratingDual ? <Loader2 size={16} className="animate-spin" /> : <Printer size={16} />}
+              <span className="whitespace-nowrap">הורד את שתיהן</span>
+            </button>
+            <button onClick={() => window.print()} className="flex-1 sm:flex-none bg-blue-600 text-white px-5 py-2.5 rounded-xl flex items-center justify-center gap-2 hover:bg-blue-500 transition-all shadow-lg shadow-blue-500/20 active:scale-95 font-bold">
               <Printer size={18} />
               <span className="whitespace-nowrap text-sm">הורד PDF</span>
             </button>
@@ -1159,6 +1187,14 @@ export default function App() {
             {resumeData.template === 'classic' && <ClassicTemplate data={resumeData} />}
             {resumeData.template === 'modern' && <ModernTemplate data={resumeData} />}
             {resumeData.template === 'minimalist' && <MinimalistTemplate data={resumeData} />}
+            
+            {mirroredData && (
+              <div className="break-before-page mt-8 print:mt-0">
+                {mirroredData.template === 'classic' && <ClassicTemplate data={mirroredData} />}
+                {mirroredData.template === 'modern' && <ModernTemplate data={mirroredData} />}
+                {mirroredData.template === 'minimalist' && <MinimalistTemplate data={mirroredData} />}
+              </div>
+            )}
             
             {resumeData.appendixImages?.map((img, i) => (
               <div key={`appendix-${i}`} className="print:block print:w-[210mm] print:h-[297mm] print:m-0 print:p-0 break-before-page w-[210mm] min-h-[297mm] flex flex-col items-center justify-center bg-white mt-4 print:mt-0 shadow-2xl print:shadow-none">

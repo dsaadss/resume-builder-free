@@ -53,7 +53,7 @@ const generateMainBlocks = (data: ResumeData, templateClassTheme: string) => {
     ) : null,
     experience: data.experience.length > 0 ? (
       <section style={{ paddingBottom: getPad(data, 'experience') }}>
-        <h3 className={templateClassTheme} style={{ color: data.themeColor, borderColor: data.themeColor }}>{h.experience || 'ניסיון תעסוקתי'}</h3>
+        <h3 className={templateClassTheme} style={{ color: data.themeColor, borderColor: data.themeColor }}>{h.experience || (data.language === 'en' ? 'Experience' : 'ניסיון תעסוקתי')}</h3>
         {data.experience.map(exp => (
           <article key={exp.id} className="mb-4">
             <header className="flex justify-between font-bold text-sm">
@@ -67,7 +67,7 @@ const generateMainBlocks = (data: ResumeData, templateClassTheme: string) => {
     ) : null,
     education: data.education.length > 0 ? (
       <section style={{ paddingBottom: getPad(data, 'education') }}>
-        <h3 className={templateClassTheme} style={{ color: data.themeColor, borderColor: data.themeColor }}>{h.education || 'השכלה'}</h3>
+        <h3 className={templateClassTheme} style={{ color: data.themeColor, borderColor: data.themeColor }}>{h.education || (data.language === 'en' ? 'Education' : 'השכלה')}</h3>
         {data.education.map(edu => (
           <article key={edu.id} className="mb-3">
             <header className="flex justify-between font-bold text-sm">
@@ -81,7 +81,7 @@ const generateMainBlocks = (data: ResumeData, templateClassTheme: string) => {
     ) : null,
     courses: data.courses.length > 0 ? (
       <div style={{ paddingBottom: getPad(data, 'courses') }}>
-        <h3 className={templateClassTheme} style={{ color: data.themeColor, borderColor: data.themeColor }}>{h.courses || 'קורסים'}</h3>
+        <h3 className={templateClassTheme} style={{ color: data.themeColor, borderColor: data.themeColor }}>{h.courses || (data.language === 'en' ? 'Courses' : 'קורסים')}</h3>
         <div className="space-y-1 text-sm">
           {data.courses.map(course => (
             <div key={course.id} className="flex justify-between font-bold">
@@ -94,7 +94,7 @@ const generateMainBlocks = (data: ResumeData, templateClassTheme: string) => {
     ) : null,
     military: data.military.length > 0 ? (
       <div style={{ paddingBottom: getPad(data, 'military') }}>
-        <h3 className={templateClassTheme} style={{ color: data.themeColor, borderColor: data.themeColor }}>{h.military || 'שירות צבאי'}</h3>
+        <h3 className={templateClassTheme} style={{ color: data.themeColor, borderColor: data.themeColor }}>{h.military || (data.language === 'en' ? 'Military Service' : 'שירות צבאי')}</h3>
         {data.military.map(mil => (
           <div key={mil.id} className="mb-3">
             <div className="flex justify-between font-bold text-sm">
@@ -108,7 +108,7 @@ const generateMainBlocks = (data: ResumeData, templateClassTheme: string) => {
     ) : null,
     projects: data.projects.length > 0 ? (
       <div style={{ paddingBottom: getPad(data, 'projects') }}>
-        <h3 className={templateClassTheme} style={{ color: data.themeColor, borderColor: data.themeColor }}>{h.projects || 'פרוייקטים'}</h3>
+        <h3 className={templateClassTheme} style={{ color: data.themeColor, borderColor: data.themeColor }}>{h.projects || (data.language === 'en' ? 'Projects' : 'פרוייקטים')}</h3>
         {data.projects.map(proj => (
           <div key={proj.id} className="mb-3">
             <div className="font-bold text-sm">{proj.name}</div>
@@ -217,19 +217,19 @@ export const ModernTemplate = ({ data }: { data: ResumeData }) => {
   const sidebarBlocks: Record<string, React.ReactNode> = {
     skills: data.skills.length > 0 ? (
       <div style={{ paddingBottom: getPad(data, 'skills') }}>
-        <h3 className="text-lg font-bold border-b pb-1 mb-4" style={{ color: data.themeColor, borderColor: data.themeColor }}>{h.skills || 'מיומנויות'}</h3>
+        <h3 className="text-lg font-bold border-b pb-1 mb-4" style={{ color: data.themeColor, borderColor: data.themeColor }}>{h.skills || (data.language === 'en' ? 'Skills' : 'מיומנויות')}</h3>
         <div className="text-gray-700"><BulletList items={data.skills} format={data.settings?.skillsFormat} /></div>
       </div>
     ) : null,
     languages: data.languages.length > 0 ? (
       <div style={{ paddingBottom: getPad(data, 'languages') }}>
-        <h3 className="text-lg font-bold border-b pb-1 mb-4" style={{ color: data.themeColor, borderColor: data.themeColor }}>{h.languages || 'שפות'}</h3>
+        <h3 className="text-lg font-bold border-b pb-1 mb-4" style={{ color: data.themeColor, borderColor: data.themeColor }}>{h.languages || (data.language === 'en' ? 'Languages' : 'שפות')}</h3>
         <div className="text-gray-700"><BulletList items={data.languages} /></div>
       </div>
     ) : null,
     links: data.links.length > 0 ? (
       <div style={{ paddingBottom: getPad(data, 'links') }}>
-        <h3 className="text-lg font-bold border-b pb-1 mb-4" style={{ color: data.themeColor, borderColor: data.themeColor }}>{h.links || 'קישורים'}</h3>
+        <h3 className="text-lg font-bold border-b pb-1 mb-4" style={{ color: data.themeColor, borderColor: data.themeColor }}>{h.links || (data.language === 'en' ? 'Links' : 'קישורים')}</h3>
         <div className="space-y-2 text-sm text-gray-700" dir="ltr">
           {data.links.map(link => (
             <div key={link.id} className="text-right">
@@ -288,13 +288,13 @@ export const MinimalistTemplate = ({ data }: { data: ResumeData }) => {
   const sidebarBlocks: Record<string, React.ReactNode> = {
     skills: data.skills.length > 0 ? (
       <div style={{ paddingBottom: getPad(data, 'skills') }}>
-        <h3 className="text-lg font-bold border-b pb-1 mb-4 uppercase tracking-wider text-gray-900" style={{ borderColor: data.themeColor }}>{h.skills || 'מיומנויות'}</h3>
+        <h3 className="text-lg font-bold border-b pb-1 mb-4 uppercase tracking-wider text-gray-900" style={{ borderColor: data.themeColor }}>{h.skills || (data.language === 'en' ? 'Skills' : 'מיומנויות')}</h3>
         <div className="text-gray-700"><BulletList items={data.skills} format={data.settings?.skillsFormat} /></div>
       </div>
     ) : null,
     languages: data.languages.length > 0 ? (
       <div style={{ paddingBottom: getPad(data, 'languages') }}>
-        <h3 className="text-lg font-bold border-b pb-1 mb-4 uppercase tracking-wider text-gray-900" style={{ borderColor: data.themeColor }}>{h.languages || 'שפות'}</h3>
+        <h3 className="text-lg font-bold border-b pb-1 mb-4 uppercase tracking-wider text-gray-900" style={{ borderColor: data.themeColor }}>{h.languages || (data.language === 'en' ? 'Languages' : 'שפות')}</h3>
         <div className="text-gray-700"><BulletList items={data.languages} /></div>
       </div>
     ) : null,

@@ -149,12 +149,6 @@ export default function App() {
   const [fakeIndex, setFakeIndex] = useState(0);
   const [formWidth, setFormWidth] = useState(50);
   const [isTranslatingAll, setIsTranslatingAll] = useState(false);
-  
-  const [storedHe, setStoredHe] = useState<ResumeData | null>(null);
-  const [storedEn, setStoredEn] = useState<ResumeData | null>(null);
-  const [isEnValidated, setIsEnValidated] = useState(false);
-  const [includeHe, setIncludeHe] = useState(true);
-  const [includeEn, setIncludeEn] = useState(false);
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('darkMode');
@@ -175,16 +169,6 @@ export default function App() {
       localStorage.setItem('darkMode', darkMode.toString());
     }
   }, [darkMode]);
-
-  // Load persistence states on mount
-  useEffect(() => {
-    const sHe = localStorage.getItem('storedHe');
-    const sEn = localStorage.getItem('storedEn');
-    const isValid = localStorage.getItem('isEnValidated');
-    if (sHe) setStoredHe(JSON.parse(sHe));
-    if (sEn) setStoredEn(JSON.parse(sEn));
-    if (isValid) setIsEnValidated(JSON.parse(isValid));
-  }, []);
 
   const { register, control, handleSubmit, reset, watch, setValue } = useForm<ResumeData>({
     defaultValues: loadSavedData(),
@@ -232,32 +216,9 @@ export default function App() {
 
   const handleTranslateAll = async () => {
     setIsTranslatingAll(true);
-    const currentLang = resumeData.language || 'he';
-    const targetLang = currentLang === 'en' ? 'he' : 'en';
-
-    // 1. Save current state to the active slot
-    if (currentLang === 'he') setStoredHe(resumeData);
-    else setStoredEn(resumeData);
-
-    // 2. Load the other slot if it exists
-    const otherData = targetLang === 'en' ? storedEn : storedHe;
-    if (otherData) {
-      reset(otherData);
-      setIsTranslatingAll(false);
-      setConfirmAction(null);
-      return;
-    }
-
-    // 3. If target slot is empty, perform translation
+    const targetLang = resumeData.language === 'en' ? 'he' : 'en';
     const translated = await getTranslatedData(resumeData, targetLang);
     reset(translated);
-    if (targetLang === 'en') {
-      setStoredEn(translated);
-      setIsEnValidated(false);
-    } else {
-      setStoredHe(translated);
-    }
-    
     setIsTranslatingAll(false);
     setConfirmAction(null);
   };
@@ -266,10 +227,7 @@ export default function App() {
   useEffect(() => {
     document.title = `Resume_${resumeData.personal.firstName}_${resumeData.personal.lastName}`;
     localStorage.setItem('resumeData', JSON.stringify(resumeData));
-    if (storedHe) localStorage.setItem('storedHe', JSON.stringify(storedHe));
-    if (storedEn) localStorage.setItem('storedEn', JSON.stringify(storedEn));
-    localStorage.setItem('isEnValidated', JSON.stringify(isEnValidated));
-  }, [resumeData, storedHe, storedEn, isEnValidated]);
+  }, [resumeData]);
 
   const moveOrder = (key: 'mainOrder' | 'sidebarOrder', id: string, dir: number) => {
     const list = [...(resumeData.settings[key] || [])];
@@ -383,70 +341,22 @@ export default function App() {
               </button>
             </div>
           </div>
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 relative z-10 w-full sm:w-auto">
-            <div className="flex items-center gap-2 px-3 py-1 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl mr-1">
-              <label className="flex items-center gap-1.5 cursor-pointer select-none">
-                <input type="checkbox" checked={includeHe} onChange={e => setIncludeHe(e.target.checked)} className="w-3.5 h-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
-                <span className="text-[10px] font-black text-slate-600 dark:text-slate-400">עברית</span>
-              </label>
-              <div className="w-px h-3 bg-slate-200 dark:bg-slate-700 mx-1"></div>
-              <label className="flex items-center gap-1.5 cursor-pointer select-none relative group/enToggle">
-                <input 
-                  type="checkbox" 
-                  checked={includeEn} 
-                  disabled={!storedEn}
-                  onChange={e => setIncludeEn(e.target.checked)} 
-                  className={`w-3.5 h-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 ${!storedEn ? 'opacity-30' : ''}`} 
-                />
-                <span className={`text-[10px] font-black ${!storedEn ? 'text-slate-300 cursor-not-allowed' : 'text-slate-600 dark:text-slate-400'}`}>
-                  אנגלית {storedEn && !isEnValidated && <span className="text-amber-500 font-bold">*</span>}
-                </span>
-                {!storedEn && (
-                  <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[8px] px-2 py-1 rounded opacity-0 group-hover/enToggle:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
-                    תרגם קודם לאנגלית
-                  </div>
-                )}
-              </label>
-            </div>
-            
-            <div className="flex gap-2">
-              <button type="button" onClick={() => setConfirmAction('clear')} className="flex-1 sm:flex-none bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-300 border border-slate-200 dark:border-slate-700 px-4 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-700 dark:hover:text-white transition-all text-xs font-bold shadow-sm active:scale-95">
-                נקה
-              </button>
-              <button onClick={() => {
-                if (includeEn && !isEnValidated) {
-                  if (!confirm('התרגום לאנגלית טרם אושר. להמשיך בהורדה?')) return;
-                }
-                window.print();
-              }} className="flex-x sm:flex-none bg-blue-600 text-white px-5 py-2.5 rounded-xl flex items-center justify-center gap-2 hover:bg-blue-500 transition-all shadow-lg shadow-blue-500/20 active:scale-95 font-bold">
-                <Printer size={18} />
-                <span className="whitespace-nowrap text-sm">הורד PDF</span>
-              </button>
-            </div>
+          <div className="flex gap-2 relative z-10 w-full sm:w-auto">
+            <button type="button" onClick={() => setConfirmAction('clear')} className="flex-1 sm:flex-none bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-300 border border-slate-200 dark:border-slate-700 px-4 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-700 dark:hover:text-white transition-all text-xs font-bold shadow-sm active:scale-95">
+              נקה
+            </button>
+            <button type="button" onClick={() => setConfirmAction('reset')} className="flex-1 sm:flex-none bg-red-500/5 text-red-500 border border-red-500/10 px-4 py-2.5 rounded-xl hover:bg-red-500 hover:text-white transition-all text-xs font-bold active:scale-95" title="טען את קורות החיים של ירדן (לדוגמה)">
+              דוגמה
+            </button>
+            <button onClick={() => window.print()} className="flex-1 sm:flex-none bg-blue-600 text-white px-5 py-2.5 rounded-xl flex items-center justify-center gap-2 hover:bg-blue-500 transition-all shadow-lg shadow-blue-500/20 active:scale-95 font-bold">
+              <Printer size={18} />
+              <span className="whitespace-nowrap text-sm">הורד PDF</span>
+            </button>
           </div>
         </div>
 
         <form className="space-y-8">
-          {resumeData.language === 'en' && !isEnValidated && (
-            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 animate-in fade-in slide-in-from-top-4 duration-500">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-amber-100 dark:bg-amber-800/40 rounded-full flex items-center justify-center text-amber-600 dark:text-amber-400">
-                  <Languages size={20} />
-                </div>
-                <div>
-                  <h4 className="text-sm font-black text-amber-800 dark:text-amber-200">זהו תרגום אוטומטי</h4>
-                  <p className="text-xs text-amber-700 dark:text-amber-300">אנא ודאו שהכל תקין לפני ההורדה.</p>
-                </div>
-              </div>
-              <button 
-                type="button" 
-                onClick={() => setIsEnValidated(true)}
-                className="w-full sm:w-auto bg-amber-600 text-white px-4 py-2 rounded-xl text-xs font-black shadow-lg shadow-amber-600/20 hover:bg-amber-500 transition-all active:scale-95"
-              >
-                אישור תרגום
-              </button>
-            </div>
-          )}
+锋
           {/* Template Selection */}
           <section>
             <h2 className="text-xl font-black mb-4 text-slate-800 dark:text-slate-100 border-b border-slate-200 dark:border-slate-800 pb-2">תבנית</h2>
@@ -1252,25 +1162,9 @@ export default function App() {
       >
         <div className="transform scale-[0.6] sm:scale-[0.8] md:scale-[0.6] lg:scale-[0.8] xl:scale-100 origin-top print:transform-none print:scale-100 print:w-full print:h-auto print:m-0 print:p-0">
           <div className="bg-white shadow-2xl w-[210mm] min-h-[297mm] print:shadow-none print:m-0 print:p-0" ref={printRef}>
-            {includeHe && (
-              <>
-                {(storedHe || (resumeData.language === 'he' ? resumeData : null)) && (
-                  <>
-                    {(storedHe || resumeData).template === 'classic' && <ClassicTemplate data={storedHe || resumeData} />}
-                    {(storedHe || resumeData).template === 'modern' && <ModernTemplate data={storedHe || resumeData} />}
-                    {(storedHe || resumeData).template === 'minimalist' && <MinimalistTemplate data={storedHe || resumeData} />}
-                  </>
-                )}
-              </>
-            )}
-            
-            {includeEn && storedEn && (
-              <div className="break-before-page mt-8 print:mt-0">
-                {storedEn.template === 'classic' && <ClassicTemplate data={storedEn} />}
-                {storedEn.template === 'modern' && <ModernTemplate data={storedEn} />}
-                {storedEn.template === 'minimalist' && <MinimalistTemplate data={storedEn} />}
-              </div>
-            )}
+            {resumeData.template === 'classic' && <ClassicTemplate data={resumeData} />}
+            {resumeData.template === 'modern' && <ModernTemplate data={resumeData} />}
+            {resumeData.template === 'minimalist' && <MinimalistTemplate data={resumeData} />}
             
             {resumeData.appendixImages?.map((img, i) => (
               <div key={`appendix-${i}`} className="print:block print:w-[210mm] print:h-[297mm] print:m-0 print:p-0 break-before-page w-[210mm] min-h-[297mm] flex flex-col items-center justify-center bg-white mt-4 print:mt-0 shadow-2xl print:shadow-none">

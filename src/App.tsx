@@ -333,11 +333,16 @@ export default function App() {
                 }`}
               >
                 {isTranslatingAll ? (
-                  <Loader2 size={12} className="animate-spin" />
+                  <>
+                    <Loader2 size={12} className="animate-spin" />
+                    <span className="animate-pulse">ממתין... (10s)</span>
+                  </>
                 ) : (
-                  <Languages size={12} />
+                  <>
+                    <Languages size={12} />
+                    {resumeData.language === 'en' ? 'Hebrew' : 'English'}
+                  </>
                 )}
-                {resumeData.language === 'en' ? 'Hebrew' : 'English'}
               </button>
             </div>
           </div>
@@ -1187,7 +1192,14 @@ export default function App() {
               {confirmAction === 'clear' 
                 ? 'הפעולה תמחק את כל הטופס ותתחיל מסמך ריק. כל מה שהזנת יימחק לצמיתות.'
                 : confirmAction === 'translate'
-                ? 'הפעולה תתרגם את כל השדות בקורות החיים ותהפוך את כיוון הדף. מומלץ לגבות נתונים חשובים.'
+                ? (
+                  <>
+                    <p>הפעולה תתרגם את כל השדות בקורות החיים ותהפוך את כיוון הדף.</p>
+                    <p className="mt-2 font-black text-amber-600 dark:text-amber-400 italic underline decoration-amber-500/30">
+                      חשוב: התרגום לוקח בערך 10 שניות, אנא המתינו בסבלנות - האתר לא נתקע.
+                    </p>
+                  </>
+                )
                 : 'הפעולה תשחזר את קורות החיים המקוריים של ירדן ותמחוק את השינויים שלך.'}
             </p>
             <div className="flex gap-4 relative z-10">

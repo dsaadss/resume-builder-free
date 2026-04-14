@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
-import { Upload, Printer, Plus, Trash2, GripVertical, Check } from 'lucide-react';
+import { Upload, Printer, Plus, Trash2, GripVertical, Check, Languages, Loader2 } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import * as pdfjsLib from 'pdfjs-dist';
 

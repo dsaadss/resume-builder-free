@@ -41,6 +41,7 @@ export type ResumeData = {
   links: Array<{ id: string; name: string; url: string }>;
   projects: Array<{ id: string; name: string; description: string }>;
   appendixImages?: string[];
+  language?: 'he' | 'en';
 };
 
 export const initialResumeData: ResumeData = {
@@ -54,6 +55,7 @@ export const initialResumeData: ResumeData = {
     mainOrder: ['summary', 'experience', 'education', 'courses', 'military', 'projects'],
     skillsFormat: 'bullets'
   },
+  language: 'he',
   personal: {
     firstName: "ירדן שלום",
     lastName: "בר-אל",
@@ -148,6 +150,7 @@ export const emptyResumeData: ResumeData = {
     mainOrder: ['summary', 'experience', 'education', 'courses', 'military', 'projects'],
     skillsFormat: 'bullets'
   },
+  language: 'he',
   personal: {
     firstName: "",
     lastName: "",

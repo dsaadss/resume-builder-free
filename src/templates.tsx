@@ -129,29 +129,29 @@ export const ClassicTemplate = ({ data }: { data: ResumeData }) => {
   const sidebarBlocks: Record<string, React.ReactNode> = {
     personal: (
       <div style={{ paddingBottom: getPad(data, 'personal') }}>
-        <h3 className="text-lg font-bold border-b border-white/30 pb-1 mb-4 text-right">{h.personal || 'פרטים אישיים'}</h3>
-        <div className="space-y-3 text-sm text-right" dir="ltr">
+        <h3 className={`text-lg font-bold border-b border-white/30 pb-1 mb-4 ${data.language === 'en' ? 'text-left' : 'text-right'}`}>{h.personal || (data.language === 'en' ? 'Personal Details' : 'פרטים אישיים')}</h3>
+        <div className={`space-y-3 text-sm ${data.language === 'en' ? 'text-left' : 'text-right'}`} dir="ltr">
           {data.personal.phone && (
-            <div className="flex items-center justify-end gap-2">
+            <div className={`flex items-center gap-2 ${data.language === 'en' ? 'justify-start' : 'justify-end'}`}>
               <a href={`tel:${data.personal.phone}`} className="hover:underline">{data.personal.phone}</a>
               <span className="w-4 h-4 rounded-full border border-white flex items-center justify-center text-[10px]" aria-hidden="true">📞</span>
             </div>
           )}
           {data.personal.email && (
-            <div className="flex items-center justify-end gap-2">
+            <div className={`flex items-center gap-2 ${data.language === 'en' ? 'justify-start' : 'justify-end'}`}>
               <a href={`mailto:${data.personal.email}`} className="hover:underline">{data.personal.email}</a>
               <span className="w-4 h-4 rounded-full border border-white flex items-center justify-center text-[10px]" aria-hidden="true">✉</span>
             </div>
           )}
           {data.personal.address && (
-            <div className="flex items-center justify-end gap-2" dir="rtl">
+            <div className={`flex items-center gap-2 ${data.language === 'en' ? 'justify-start' : 'justify-end'}`} dir="auto">
               <span>{data.personal.address}</span>
               <span className="w-4 h-4 rounded-full border border-white flex items-center justify-center text-[10px]" aria-hidden="true">📍</span>
             </div>
           )}
           {data.personal.idNumber && (
-            <div className="mt-4 text-right" dir="rtl">
-              <div className="text-white/70 text-xs">תעודת זהות</div>
+            <div className={`mt-4 ${data.language === 'en' ? 'text-left' : 'text-right'}`} dir="auto">
+              <div className="text-white/70 text-xs">{data.language === 'en' ? 'ID Number' : 'תעודת זהות'}</div>
               <div>{data.personal.idNumber}</div>
             </div>
           )}
@@ -160,8 +160,8 @@ export const ClassicTemplate = ({ data }: { data: ResumeData }) => {
     ),
     links: data.links.length > 0 ? (
       <div style={{ paddingBottom: getPad(data, 'links') }}>
-        <h3 className="text-lg font-bold border-b border-white/30 pb-1 mb-4 text-right">{h.links || 'קישורים'}</h3>
-        <div className="space-y-2 text-sm text-right" dir="ltr">
+        <h3 className={`text-lg font-bold border-b border-white/30 pb-1 mb-4 ${data.language === 'en' ? 'text-left' : 'text-right'}`}>{h.links || (data.language === 'en' ? 'Links' : 'קישורים')}</h3>
+        <div className={`space-y-2 text-sm ${data.language === 'en' ? 'text-left' : 'text-right'}`} dir="ltr">
           {data.links.map(link => (
             <div key={link.id}><a href={link.url} className="underline hover:text-white/80">{link.name}</a></div>
           ))}
@@ -170,13 +170,13 @@ export const ClassicTemplate = ({ data }: { data: ResumeData }) => {
     ) : null,
     skills: data.skills.length > 0 ? (
       <div style={{ paddingBottom: getPad(data, 'skills') }}>
-        <h3 className="text-lg font-bold border-b border-white/30 pb-1 mb-4 text-right">{h.skills || 'מיומנויות'}</h3>
+        <h3 className={`text-lg font-bold border-b border-white/30 pb-1 mb-4 ${data.language === 'en' ? 'text-left' : 'text-right'}`}>{h.skills || (data.language === 'en' ? 'Skills' : 'מיומנויות')}</h3>
         <BulletList items={data.skills} format={data.settings?.skillsFormat} />
       </div>
     ) : null,
     languages: data.languages.length > 0 ? (
       <div style={{ paddingBottom: getPad(data, 'languages') }}>
-        <h3 className="text-lg font-bold border-b border-white/30 pb-1 mb-4 text-right">{h.languages || 'שפות'}</h3>
+        <h3 className={`text-lg font-bold border-b border-white/30 pb-1 mb-4 ${data.language === 'en' ? 'text-left' : 'text-right'}`}>{h.languages || (data.language === 'en' ? 'Languages' : 'שפות')}</h3>
         <BulletList items={data.languages} />
       </div>
     ) : null
@@ -185,7 +185,7 @@ export const ClassicTemplate = ({ data }: { data: ResumeData }) => {
   const mainBlocks = generateMainBlocks(data, "text-lg font-bold border-b pb-1 mb-3");
 
   return (
-    <div className="flex w-full min-h-[297mm] bg-white text-gray-900" dir="rtl">
+    <div className="flex w-full min-h-[297mm] bg-white text-gray-900" dir={data.language === 'en' ? 'ltr' : 'rtl'}>
       {/* Sidebar */}
       <div className="w-1/3 text-white" style={{ backgroundColor: data.themeColor, padding: globalPadStr }}>
         {activeImg && (
@@ -244,7 +244,7 @@ export const ModernTemplate = ({ data }: { data: ResumeData }) => {
   const mainBlocks = generateMainBlocks(data, "text-lg font-bold border-b pb-1 mb-3");
 
   return (
-    <div className="w-full min-h-[297mm] bg-white text-gray-900 flex flex-col" dir="rtl">
+    <div className="w-full min-h-[297mm] bg-white text-gray-900 flex flex-col" dir={data.language === 'en' ? 'ltr' : 'rtl'}>
       {/* Header */}
       <div className="text-white flex items-center gap-8" style={{ backgroundColor: data.themeColor, padding: globalPadStr }}>
         {activeImg && (
@@ -302,7 +302,7 @@ export const MinimalistTemplate = ({ data }: { data: ResumeData }) => {
   };
 
   return (
-    <div className="w-full min-h-[297mm] bg-white text-gray-900" style={{ padding: padStr }} dir="rtl">
+    <div className="w-full min-h-[297mm] bg-white text-gray-900" style={{ padding: padStr }} dir={data.language === 'en' ? 'ltr' : 'rtl'}>
       {/* Header */}
       <div className="text-center mb-8 border-b-2 pb-6" style={{ borderColor: data.themeColor }}>
         <h1 className="text-4xl font-bold mb-2 tracking-tight" style={{ color: data.themeColor }}>{data.personal.firstName} {data.personal.lastName}</h1>

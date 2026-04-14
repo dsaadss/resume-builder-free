@@ -145,9 +145,10 @@ const FormSectionHeader = ({
 };
 
 export default function App() {
-  const [confirmAction, setConfirmAction] = useState<'clear' | 'reset' | null>(null);
+  const [confirmAction, setConfirmAction] = useState<'clear' | 'reset' | 'translate' | null>(null);
   const [fakeIndex, setFakeIndex] = useState(0);
   const [formWidth, setFormWidth] = useState(50);
+  const [isTranslatingAll, setIsTranslatingAll] = useState(false);
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('darkMode');
@@ -175,6 +176,49 @@ export default function App() {
   
   const resumeData = watch();
   const printRef = useRef<HTMLDivElement>(null);
+
+  const handleTranslateAll = async () => {
+    setIsTranslatingAll(true);
+    const data = { ...resumeData };
+    const isCurrentlyHebrew = data.language !== 'en';
+    const sourceLang = isCurrentlyHebrew ? 'he' : 'en';
+    const targetLang = isCurrentlyHebrew ? 'en' : 'he';
+
+    const translateDeep = async (obj: any): Promise<any> => {
+      if (typeof obj === 'string') {
+        const val = obj.trim();
+        if (val.length < 2 || /^[0-9a-f-]{36}$/.test(val) || /^http/.test(val) || val.includes('@')) return obj;
+        try {
+          const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(val)}&langpair=${sourceLang}|${targetLang}`);
+          const json = await res.json();
+          if (json.responseData?.translatedText) {
+            return json.responseData.translatedText
+              .replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, '&');
+          }
+          return obj;
+        } catch (e) { return obj; }
+      } else if (Array.isArray(obj)) {
+        return Promise.all(obj.map(item => translateDeep(item)));
+      } else if (typeof obj === 'object' && obj !== null) {
+        const newObj: any = {};
+        for (const key in obj) {
+          if (['id', 'dataUrl', 'posX', 'posY', 'scale', 'rotate', 'padding', 'sectionPadding', 'sidebarOrder', 'mainOrder', 'template', 'themeColor', 'appendixImages'].includes(key)) {
+            newObj[key] = obj[key];
+          } else {
+            newObj[key] = await translateDeep(obj[key]);
+          }
+        }
+        return newObj;
+      }
+      return obj;
+    };
+
+    const translatedData = await translateDeep(data);
+    translatedData.language = targetLang;
+    reset(translatedData);
+    setIsTranslatingAll(false);
+    setConfirmAction(null);
+  };
 
   useEffect(() => {
     document.title = `Resume_${resumeData.personal.firstName}_${resumeData.personal.lastName}`;
@@ -273,6 +317,24 @@ export default function App() {
                 <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest tooltip" title="שנה מצב תצוגה">ערכת נושא</span>
                 <SkyToggle checked={darkMode} onChange={setDarkMode} />
               </div>
+              <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-1 hidden sm:block"></div>
+              <button 
+                type="button"
+                onClick={() => setConfirmAction('translate')}
+                disabled={isTranslatingAll}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all active:scale-95 shadow-sm border ${
+                  resumeData.language === 'en' 
+                    ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800' 
+                    : 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800'
+                }`}
+              >
+                {isTranslatingAll ? (
+                  <Loader2 size={12} className="animate-spin" />
+                ) : (
+                  <Languages size={12} />
+                )}
+                {resumeData.language === 'en' ? 'Hebrew' : 'English'}
+              </button>
             </div>
           </div>
           <div className="flex gap-2 relative z-10 w-full sm:w-auto">
@@ -1113,11 +1175,13 @@ export default function App() {
             <div className="absolute top-0 right-0 w-24 h-24 bg-red-500/[0.03] dark:bg-red-500/5 rounded-full -translate-y-12 translate-x-12"></div>
             
             <h3 className="text-2xl font-black mb-3 text-slate-800 dark:text-white relative z-10">
-              {confirmAction === 'clear' ? 'נקה נתונים?' : 'חזור לנתוני דוגמה?'}
+              {confirmAction === 'clear' ? 'נקה נתונים?' : confirmAction === 'translate' ? 'תרגם את כל הקורות חיים?' : 'חזור לנתוני דוגמה?'}
             </h3>
             <p className="text-slate-500 dark:text-slate-400 mb-8 text-sm leading-relaxed font-medium relative z-10">
               {confirmAction === 'clear' 
                 ? 'הפעולה תמחק את כל הטופס ותתחיל מסמך ריק. כל מה שהזנת יימחק לצמיתות.'
+                : confirmAction === 'translate'
+                ? 'הפעולה תתרגם את כל השדות בקורות החיים ותהפוך את כיוון הדף. מומלץ לגבות נתונים חשובים.'
                 : 'הפעולה תשחזר את קורות החיים המקוריים של ירדן ותמחוק את השינויים שלך.'}
             </p>
             <div className="flex gap-4 relative z-10">
@@ -1133,11 +1197,14 @@ export default function App() {
                 onClick={() => {
                   if (confirmAction === 'clear') reset(emptyResumeData);
                   if (confirmAction === 'reset') reset(initialResumeData);
-                  setConfirmAction(null);
+                  if (confirmAction === 'translate') handleTranslateAll();
+                  if (confirmAction !== 'translate') setConfirmAction(null);
                 }} 
-                className="flex-1 px-6 py-3.5 text-sm font-black bg-red-600 text-white rounded-2xl hover:bg-red-700 transition-all shadow-lg shadow-red-600/20 active:scale-95"
+                className={`flex-1 px-6 py-3.5 text-sm font-black text-white rounded-2xl transition-all shadow-lg active:scale-95 ${
+                  confirmAction === 'translate' ? 'bg-blue-600 hover:bg-blue-700 shadow-blue-600/20' : 'bg-red-600 hover:bg-red-700 shadow-red-600/20'
+                }`}
               >
-                כן, בצע
+                {confirmAction === 'translate' ? 'תרגם הכל' : 'כן, בצע'}
               </button>
             </div>
           </div>

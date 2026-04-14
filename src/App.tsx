@@ -9,6 +9,7 @@ import { ResumeData, initialResumeData, emptyResumeData } from './types';
 import { ClassicTemplate, ModernTemplate, MinimalistTemplate } from './templates';
 import { getFakeDataProfiles } from './fakeData';
 import SkyToggle from './components/ui/sky-toggle';
+import TranslateButton from './components/ui/TranslateButton';
 
 const loadSavedData = (): ResumeData => {
   if (typeof window === 'undefined') return initialResumeData;
@@ -555,31 +556,49 @@ export default function App() {
                 )}
               </div>
               <div>
-                <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 px-1">שם פרטי</label>
+                <label className="flex items-center justify-between text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 px-1">
+                  <span>שם פרטי</span>
+                  <TranslateButton value={watch('personal.firstName')} onTranslate={(val) => setValue('personal.firstName', val)} />
+                </label>
                 <input {...register('personal.firstName')} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all shadow-sm" />
               </div>
               <div>
-                <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 px-1">שם משפחה</label>
+                <label className="flex items-center justify-between text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 px-1">
+                  <span>שם משפחה</span>
+                  <TranslateButton value={watch('personal.lastName')} onTranslate={(val) => setValue('personal.lastName', val)} />
+                </label>
                 <input {...register('personal.lastName')} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all shadow-sm" />
               </div>
               <div>
-                <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 px-1">הגדרת תפקיד</label>
+                <label className="flex items-center justify-between text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 px-1">
+                  <span>הגדרת תפקיד</span>
+                  <TranslateButton value={watch('personal.title')} onTranslate={(val) => setValue('personal.title', val)} />
+                </label>
                 <input {...register('personal.title')} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all shadow-sm" />
               </div>
               <div>
-                <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 px-1">אימייל</label>
+                <label className="flex items-center justify-between text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 px-1">
+                  <span>אימייל</span>
+                </label>
                 <input {...register('personal.email')} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all shadow-sm" dir="ltr" />
               </div>
               <div>
-                <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 px-1">טלפון נייד</label>
+                <label className="flex items-center justify-between text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 px-1">
+                  <span>טלפון נייד</span>
+                </label>
                 <input {...register('personal.phone')} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all shadow-sm" dir="ltr" />
               </div>
               <div>
-                <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 px-1">כתובת</label>
+                <label className="flex items-center justify-between text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 px-1">
+                  <span>כתובת</span>
+                  <TranslateButton value={watch('personal.address')} onTranslate={(val) => setValue('personal.address', val)} />
+                </label>
                 <input {...register('personal.address')} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all shadow-sm" />
               </div>
               <div>
-                <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 px-1">תעודת זהות</label>
+                <label className="flex items-center justify-between text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 px-1">
+                  <span>תעודת זהות</span>
+                </label>
                 <input {...register('personal.idNumber')} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all shadow-sm" dir="ltr" />
               </div>
             </div>
@@ -595,7 +614,9 @@ export default function App() {
               watch={watch} 
               setValue={setValue} 
               moveOrder={moveOrder} 
-            />
+            >
+              <TranslateButton value={watch('summary')} onTranslate={(val) => setValue('summary', val)} />
+            </FormSectionHeader>
             <textarea {...register('summary')} rows={4} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none resize-none transition-all shadow-sm" placeholder="תיאור קצר המפרט את הניסיון המקצועי שלך..."></textarea>
           </section>
 
@@ -649,11 +670,17 @@ export default function App() {
                   </div>
                   <div className="grid grid-cols-2 gap-4 mb-4 relative z-10">
                     <div>
-                      <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 mb-2 uppercase tracking-widest px-1">תפקיד</label>
+                      <label className="flex items-center justify-between text-[10px] font-black text-slate-400 dark:text-slate-500 mb-2 uppercase tracking-widest px-1">
+                        <span>תפקיד</span>
+                        <TranslateButton value={watch(`experience.${index}.role`)} onTranslate={(val) => setValue(`experience.${index}.role`, val)} />
+                      </label>
                       <input {...register(`experience.${index}.role`)} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all shadow-sm" />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 mb-2 uppercase tracking-widest px-1">חברה/ארגון</label>
+                      <label className="flex items-center justify-between text-[10px] font-black text-slate-400 dark:text-slate-500 mb-2 uppercase tracking-widest px-1">
+                        <span>חברה/ארגון</span>
+                        <TranslateButton value={watch(`experience.${index}.company`)} onTranslate={(val) => setValue(`experience.${index}.company`, val)} />
+                      </label>
                       <input {...register(`experience.${index}.company`)} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all shadow-sm" />
                     </div>
                     <div className="col-span-2">
@@ -662,7 +689,10 @@ export default function App() {
                     </div>
                   </div>
                   <div className="relative z-10">
-                    <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 mb-2 uppercase tracking-widest px-1">תיאור</label>
+                    <label className="flex items-center justify-between text-[10px] font-black text-slate-400 dark:text-slate-500 mb-2 uppercase tracking-widest px-1">
+                      <span>תיאור</span>
+                      <TranslateButton value={watch(`experience.${index}.description`)} onTranslate={(val) => setValue(`experience.${index}.description`, val)} />
+                    </label>
                     <textarea {...register(`experience.${index}.description`)} rows={3} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 outline-none resize-none transition-all shadow-sm" />
                   </div>
                 </div>
@@ -720,11 +750,17 @@ export default function App() {
                   </div>
                   <div className="grid grid-cols-2 gap-4 relative z-10">
                     <div>
-                      <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 mb-2 uppercase tracking-widest px-1">תואר/תעודה</label>
+                      <label className="flex items-center justify-between text-[10px] font-black text-slate-400 dark:text-slate-500 mb-2 uppercase tracking-widest px-1">
+                        <span>תואר/תעודה</span>
+                        <TranslateButton value={watch(`education.${index}.degree`)} onTranslate={(val) => setValue(`education.${index}.degree`, val)} />
+                      </label>
                       <input {...register(`education.${index}.degree`)} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all shadow-sm" />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 mb-2 uppercase tracking-widest px-1">מוסד לימודים</label>
+                      <label className="flex items-center justify-between text-[10px] font-black text-slate-400 dark:text-slate-500 mb-2 uppercase tracking-widest px-1">
+                        <span>מוסד לימודים</span>
+                        <TranslateButton value={watch(`education.${index}.institution`)} onTranslate={(val) => setValue(`education.${index}.institution`, val)} />
+                      </label>
                       <input {...register(`education.${index}.institution`)} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all shadow-sm" />
                     </div>
                     <div>
@@ -732,7 +768,10 @@ export default function App() {
                       <input {...register(`education.${index}.dates`)} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all shadow-sm" />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 mb-2 uppercase tracking-widest px-1">ממוצע/הערות</label>
+                      <label className="flex items-center justify-between text-[10px] font-black text-slate-400 dark:text-slate-500 mb-2 uppercase tracking-widest px-1">
+                        <span>ממוצע/הערות</span>
+                        <TranslateButton value={watch(`education.${index}.gpa`)} onTranslate={(val) => setValue(`education.${index}.gpa`, val)} />
+                      </label>
                       <input {...register(`education.${index}.gpa`)} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all shadow-sm" />
                     </div>
                   </div>
@@ -803,7 +842,10 @@ export default function App() {
                   </button>
                   <div className="grid grid-cols-2 gap-4 mb-4 relative z-10">
                     <div>
-                      <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 mb-2 uppercase tracking-widest px-1">תפקיד</label>
+                      <label className="flex items-center justify-between text-[10px] font-black text-slate-400 dark:text-slate-500 mb-2 uppercase tracking-widest px-1">
+                        <span>תפקיד</span>
+                        <TranslateButton value={watch(`military.${index}.role`)} onTranslate={(val) => setValue(`military.${index}.role`, val)} />
+                      </label>
                       <input {...register(`military.${index}.role`)} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all shadow-sm" />
                     </div>
                     <div>
@@ -812,7 +854,10 @@ export default function App() {
                     </div>
                   </div>
                   <div className="relative z-10">
-                    <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 mb-2 uppercase tracking-widest px-1">תיאור</label>
+                    <label className="flex items-center justify-between text-[10px] font-black text-slate-400 dark:text-slate-500 mb-2 uppercase tracking-widest px-1">
+                      <span>תיאור</span>
+                      <TranslateButton value={watch(`military.${index}.description`)} onTranslate={(val) => setValue(`military.${index}.description`, val)} />
+                    </label>
                     <textarea {...register(`military.${index}.description`)} rows={2} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 outline-none resize-none transition-all shadow-sm" />
                   </div>
                 </div>
@@ -849,11 +894,17 @@ export default function App() {
                     <Trash2 size={18} />
                   </button>
                   <div className="mb-4 relative z-10">
-                    <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 mb-2 uppercase tracking-widest px-1">שם הפרוייקט</label>
+                    <label className="flex items-center justify-between text-[10px] font-black text-slate-400 dark:text-slate-500 mb-2 uppercase tracking-widest px-1">
+                      <span>שם הפרוייקט</span>
+                      <TranslateButton value={watch(`projects.${index}.name`)} onTranslate={(val) => setValue(`projects.${index}.name`, val)} />
+                    </label>
                     <input {...register(`projects.${index}.name`)} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all shadow-sm" />
                   </div>
                   <div className="relative z-10">
-                    <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 mb-2 uppercase tracking-widest px-1">תיאור</label>
+                    <label className="flex items-center justify-between text-[10px] font-black text-slate-400 dark:text-slate-500 mb-2 uppercase tracking-widest px-1">
+                      <span>תיאור</span>
+                      <TranslateButton value={watch(`projects.${index}.description`)} onTranslate={(val) => setValue(`projects.${index}.description`, val)} />
+                    </label>
                     <textarea {...register(`projects.${index}.description`)} rows={3} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 outline-none resize-none transition-all shadow-sm" />
                   </div>
                 </div>
@@ -892,8 +943,11 @@ export default function App() {
               </div>
               <div className="space-y-3">
                 {resumeData.skills.map((skill, index) => (
-                  <div key={skill.id} className="flex gap-2 items-center">
-                    <input {...register(`skills.${index}.name`)} className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all shadow-sm" dir="ltr" />
+                  <div key={skill.id} className="flex gap-2 items-center relative group/field">
+                    <input {...register(`skills.${index}.name`)} className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all shadow-sm pl-12" dir="ltr" />
+                    <div className="absolute left-10 top-1/2 -translate-y-1/2 opacity-0 group-hover/field:opacity-100 transition-opacity">
+                      <TranslateButton value={watch(`skills.${index}.name`)} onTranslate={(val) => setValue(`skills.${index}.name`, val)} className="!border-none !bg-transparent !shadow-none" />
+                    </div>
                     <button type="button" onClick={() => {
                       const current = watch('skills');
                       reset({ ...watch(), skills: current.filter((_, i) => i !== index) });
@@ -924,8 +978,11 @@ export default function App() {
               </FormSectionHeader>
               <div className="space-y-3">
                 {resumeData.languages.map((lang, index) => (
-                  <div key={lang.id} className="flex gap-2 items-center">
-                    <input {...register(`languages.${index}.name`)} className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all shadow-sm" dir="ltr" />
+                  <div key={lang.id} className="flex gap-2 items-center relative group/field">
+                    <input {...register(`languages.${index}.name`)} className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all shadow-sm pl-12" dir="ltr" />
+                    <div className="absolute left-10 top-1/2 -translate-y-1/2 opacity-0 group-hover/field:opacity-100 transition-opacity">
+                      <TranslateButton value={watch(`languages.${index}.name`)} onTranslate={(val) => setValue(`languages.${index}.name`, val)} className="!border-none !bg-transparent !shadow-none" />
+                    </div>
                     <button type="button" onClick={() => {
                       const current = watch('languages');
                       reset({ ...watch(), languages: current.filter((_, i) => i !== index) });

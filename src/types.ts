@@ -34,10 +34,10 @@ export type ResumeData = {
   summary: string;
   experience: Array<{ id: string; role: string; company: string; dates: string; description: string }>;
   education: Array<{ id: string; degree: string; institution: string; dates: string; gpa: string }>;
-  skills: Array<{ id: string; name: string }>;
+  skills: Array<{ id: string; name: string; isHeader?: boolean }>;
   courses: Array<{ id: string; name: string; grade: string }>;
   military: Array<{ id: string; role: string; dates: string; description: string }>;
-  languages: Array<{ id: string; name: string }>;
+  languages: Array<{ id: string; name: string; isHeader?: boolean }>;
   links: Array<{ id: string; name: string; url: string }>;
   projects: Array<{ id: string; name: string; description: string }>;
   appendixImages?: string[];

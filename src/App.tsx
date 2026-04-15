@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
-import { Upload, Printer, Plus, Trash2, GripVertical, Check, Languages, Loader2, Save, FileUp, Info } from 'lucide-react';
+import { Upload, Printer, Plus, Trash2, GripVertical, Check, Languages, Loader2, Save, FileUp, Info, Type, ChevronDown, ChevronUp } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import * as pdfjsLib from 'pdfjs-dist';
 
@@ -1056,15 +1056,41 @@ export default function App() {
               </div>
               <div className="space-y-3">
                 {resumeData.skills.map((skill, index) => (
-                  <div key={skill.id} className="flex gap-2 items-center relative group/field">
-                    <input {...register(`skills.${index}.name`)} className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all shadow-sm pl-12" dir="ltr" />
-                    <div className="absolute left-10 top-1/2 -translate-y-1/2 opacity-0 group-hover/field:opacity-100 transition-opacity">
+                  <div key={skill.id} className={`flex gap-2 items-center relative group/field p-1 rounded-xl transition-all ${skill.isHeader ? 'bg-blue-50/50 dark:bg-blue-900/20' : ''}`}>
+                    <div className="flex flex-col gap-0.5 opacity-0 group-hover/field:opacity-100 transition-opacity">
+                      <button type="button" onClick={() => {
+                        if (index === 0) return;
+                        const current = watch('skills');
+                        const newArr = [...current];
+                        [newArr[index - 1], newArr[index]] = [newArr[index], newArr[index - 1]];
+                        reset({ ...watch(), skills: newArr });
+                      }} className="text-slate-400 hover:text-blue-600 disabled:opacity-10" disabled={index === 0}><ChevronUp size={14} /></button>
+                      <button type="button" onClick={() => {
+                        const current = watch('skills');
+                        if (index === current.length - 1) return;
+                        const newArr = [...current];
+                        [newArr[index + 1], newArr[index]] = [newArr[index], newArr[index + 1]];
+                        reset({ ...watch(), skills: newArr });
+                      }} className="text-slate-400 hover:text-blue-600 disabled:opacity-10" disabled={index === resumeData.skills.length - 1}><ChevronDown size={14} /></button>
+                    </div>
+                    <input {...register(`skills.${index}.name`)} className={`flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all shadow-sm pl-12 ${skill.isHeader ? 'font-black text-blue-700 dark:text-blue-400 text-center' : ''}`} dir="ltr" placeholder={skill.isHeader ? 'שם הקטגוריה' : 'מיומנות'} />
+                    <div className="absolute left-20 top-1/2 -translate-y-1/2 opacity-0 group-hover/field:opacity-100 transition-opacity flex items-center gap-1">
                       <TranslateButton value={watch(`skills.${index}.name`)} onTranslate={(val) => setValue(`skills.${index}.name`, val)} className="!border-none !bg-transparent !shadow-none" />
                     </div>
-                    <button type="button" onClick={() => {
-                      const current = watch('skills');
-                      reset({ ...watch(), skills: current.filter((_, i) => i !== index) });
-                    }} className="text-red-400 hover:text-red-600 dark:hover:text-red-300 p-2 transform hover:scale-110 transition-all"><Trash2 size={20} /></button>
+                    <div className="flex gap-1 items-center">
+                      <button type="button" onClick={() => {
+                        const current = watch('skills');
+                        const newArr = [...current];
+                        newArr[index] = { ...newArr[index], isHeader: !newArr[index].isHeader };
+                        reset({ ...watch(), skills: newArr });
+                      }} className={`p-2 rounded-lg transition-all ${skill.isHeader ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`} title={skill.isHeader ? 'בטל כותרת' : 'הפוך לכותרת/קטגוריה'}>
+                        <Type size={16} />
+                      </button>
+                      <button type="button" onClick={() => {
+                        const current = watch('skills');
+                        reset({ ...watch(), skills: current.filter((_, i) => i !== index) });
+                      }} className="text-red-400 hover:text-red-600 dark:hover:text-red-300 p-2 transform hover:scale-110 transition-all"><Trash2 size={20} /></button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -1091,15 +1117,41 @@ export default function App() {
               </FormSectionHeader>
               <div className="space-y-3">
                 {resumeData.languages.map((lang, index) => (
-                  <div key={lang.id} className="flex gap-2 items-center relative group/field">
-                    <input {...register(`languages.${index}.name`)} className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all shadow-sm pl-12" dir="ltr" />
-                    <div className="absolute left-10 top-1/2 -translate-y-1/2 opacity-0 group-hover/field:opacity-100 transition-opacity">
+                  <div key={lang.id} className={`flex gap-2 items-center relative group/field p-1 rounded-xl transition-all ${lang.isHeader ? 'bg-blue-50/50 dark:bg-blue-900/20' : ''}`}>
+                    <div className="flex flex-col gap-0.5 opacity-0 group-hover/field:opacity-100 transition-opacity">
+                      <button type="button" onClick={() => {
+                        if (index === 0) return;
+                        const current = watch('languages');
+                        const newArr = [...current];
+                        [newArr[index - 1], newArr[index]] = [newArr[index], newArr[index - 1]];
+                        reset({ ...watch(), languages: newArr });
+                      }} className="text-slate-400 hover:text-blue-600 disabled:opacity-10" disabled={index === 0}><ChevronUp size={14} /></button>
+                      <button type="button" onClick={() => {
+                        const current = watch('languages');
+                        if (index === current.length - 1) return;
+                        const newArr = [...current];
+                        [newArr[index + 1], newArr[index]] = [newArr[index], newArr[index + 1]];
+                        reset({ ...watch(), languages: newArr });
+                      }} className="text-slate-400 hover:text-blue-600 disabled:opacity-10" disabled={index === resumeData.languages.length - 1}><ChevronDown size={14} /></button>
+                    </div>
+                    <input {...register(`languages.${index}.name`)} className={`flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all shadow-sm pl-12 ${lang.isHeader ? 'font-black text-blue-700 dark:text-blue-400 text-center' : ''}`} dir="ltr" placeholder={lang.isHeader ? 'שם הקטגוריה' : 'שפה'} />
+                    <div className="absolute left-20 top-1/2 -translate-y-1/2 opacity-0 group-hover/field:opacity-100 transition-opacity flex items-center gap-1">
                       <TranslateButton value={watch(`languages.${index}.name`)} onTranslate={(val) => setValue(`languages.${index}.name`, val)} className="!border-none !bg-transparent !shadow-none" />
                     </div>
-                    <button type="button" onClick={() => {
-                      const current = watch('languages');
-                      reset({ ...watch(), languages: current.filter((_, i) => i !== index) });
-                    }} className="text-red-400 hover:text-red-600 dark:hover:text-red-300 p-2 transform hover:scale-110 transition-all"><Trash2 size={20} /></button>
+                    <div className="flex gap-1 items-center">
+                      <button type="button" onClick={() => {
+                        const current = watch('languages');
+                        const newArr = [...current];
+                        newArr[index] = { ...newArr[index], isHeader: !newArr[index].isHeader };
+                        reset({ ...watch(), languages: newArr });
+                      }} className={`p-2 rounded-lg transition-all ${lang.isHeader ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`} title={lang.isHeader ? 'בטל כותרת' : 'הפוך לכותרת/קטגוריה'}>
+                        <Type size={16} />
+                      </button>
+                      <button type="button" onClick={() => {
+                        const current = watch('languages');
+                        reset({ ...watch(), languages: current.filter((_, i) => i !== index) });
+                      }} className="text-red-400 hover:text-red-600 dark:hover:text-red-300 p-2 transform hover:scale-110 transition-all"><Trash2 size={20} /></button>
+                    </div>
                   </div>
                 ))}
               </div>

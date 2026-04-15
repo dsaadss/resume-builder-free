@@ -2,19 +2,36 @@ import React from 'react';
 import { ResumeData } from './types';
 
 // Helper for bullet points that auto-aligns based on language
-const BulletList = ({ items, format }: { items: { id: string, name: string }[], format?: string }) => {
-  if (format === 'comma-separated') {
-    return <div className="text-sm leading-relaxed" dir="auto">{items.map(i => i.name).join(', ')}</div>;
-  }
+const BulletList = ({ items, format }: { items: { id: string, name: string, isHeader?: boolean }[], format?: string }) => {
+  if (items.length === 0) return null;
+
   return (
-    <ul className="space-y-2 text-sm list-none p-0 m-0">
-      {items.map(item => (
-        <li key={item.id} dir="auto" className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-current opacity-80 shrink-0" aria-hidden="true"></span>
-          <span className="leading-tight">{item.name}</span>
-        </li>
-      ))}
-    </ul>
+    <div className="space-y-1">
+      {items.map((item, idx) => {
+        if (item.isHeader) {
+          return (
+            <div key={item.id} className={`font-bold text-[11px] uppercase tracking-widest opacity-80 border-b border-current/10 pb-0.5 mb-2 ${idx !== 0 ? 'mt-4' : ''}`} dir="auto">
+              {item.name}
+            </div>
+          );
+        }
+
+        if (format === 'comma-separated') {
+          return (
+            <span key={item.id} className="text-sm leading-relaxed" dir="auto">
+              {item.name}{idx < items.length - 1 && !items[idx+1].isHeader ? ', ' : ''}
+            </span>
+          );
+        }
+
+        return (
+          <div key={item.id} dir="auto" className="flex items-center gap-2 text-sm mb-1.5 last:mb-0">
+            <span className="w-1.5 h-1.5 rounded-full bg-current opacity-60 shrink-0" aria-hidden="true"></span>
+            <span className="leading-tight">{item.name}</span>
+          </div>
+        );
+      })}
+    </div>
   );
 };
 

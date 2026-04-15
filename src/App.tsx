@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
-import { Upload, Printer, Plus, Trash2, GripVertical, Check, Languages, Loader2 } from 'lucide-react';
+import { Upload, Printer, Plus, Trash2, GripVertical, Check, Languages, Loader2, Save, FileUp, Info } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import * as pdfjsLib from 'pdfjs-dist';
 
@@ -149,6 +149,7 @@ export default function App() {
   const [fakeIndex, setFakeIndex] = useState(0);
   const [formWidth, setFormWidth] = useState(50);
   const [isTranslatingAll, setIsTranslatingAll] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('darkMode');
@@ -176,6 +177,32 @@ export default function App() {
   
   const resumeData = watch();
   const printRef = useRef<HTMLDivElement>(null);
+
+  const handleExportProject = () => {
+    const dataStr = JSON.stringify(resumeData, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+    const exportFileDefaultName = `Resume_Project_${resumeData.personal.firstName}_${resumeData.personal.lastName}.resume`;
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+  };
+
+  const handleImportProject = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const json = JSON.parse(event.target?.result as string);
+        reset(json);
+      } catch (err) {
+        alert('שגיאה בטעינת הקובץ. וודאו שמדובר בקובץ .resume תקין');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
 
   const getTranslatedData = async (data: ResumeData, targetLang: 'he' | 'en'): Promise<ResumeData> => {
     const sourceLang = targetLang === 'en' ? 'he' : 'en';
@@ -347,6 +374,20 @@ export default function App() {
             </div>
           </div>
           <div className="flex gap-2 relative z-10 w-full sm:w-auto">
+            <button type="button" onClick={() => setShowHelp(true)} className="flex-1 sm:flex-none bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 p-2.5 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all shadow-sm active:scale-95" title="מה זה קובץ פרויקט?">
+              <Info size={20} />
+            </button>
+            <div className="h-10 w-px bg-slate-200 dark:bg-slate-800 mx-1 hidden sm:block"></div>
+            <button type="button" onClick={() => document.getElementById('project-upload')?.click()} className="flex-1 sm:flex-none bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 px-4 py-2.5 rounded-xl hover:border-blue-500 hover:text-blue-600 transition-all text-xs font-bold shadow-sm active:scale-95 flex items-center gap-2">
+              <FileUp size={16} />
+              <span className="hidden sm:inline">טען פרויקט</span>
+              <input type="file" id="project-upload" accept=".resume,.json" className="hidden" onChange={handleImportProject} />
+            </button>
+            <button type="button" onClick={handleExportProject} className="flex-1 sm:flex-none bg-white dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 border border-slate-200 dark:border-slate-700 px-4 py-2.5 rounded-xl hover:border-emerald-500 hover:text-emerald-500 transition-all text-xs font-bold shadow-sm active:scale-95 flex items-center gap-2">
+              <Save size={16} />
+              <span className="hidden sm:inline">שמור פרויקט</span>
+            </button>
+            <div className="h-10 w-px bg-slate-200 dark:bg-slate-800 mx-1 hidden sm:block"></div>
             <button type="button" onClick={() => setConfirmAction('clear')} className="flex-1 sm:flex-none bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-300 border border-slate-200 dark:border-slate-700 px-4 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-700 dark:hover:text-white transition-all text-xs font-bold shadow-sm active:scale-95">
               נקה
             </button>
@@ -1223,6 +1264,48 @@ export default function App() {
                 }`}
               >
                 {confirmAction === 'translate' ? 'תרגם הכל' : 'כן, בצע'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Help Modal */}
+      {showHelp && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 max-w-lg w-full shadow-2xl border border-slate-100 dark:border-slate-800 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full -translate-y-16 translate-x-16"></div>
+            <div className="relative z-10 flex flex-col items-center text-center gap-4">
+              <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center text-blue-600 dark:text-blue-400 mb-2">
+                <Info size={32} />
+              </div>
+              <h3 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight">איך לערוך את קורות החיים בעתיד?</h3>
+              <div className="space-y-4 text-slate-600 dark:text-slate-400 text-sm leading-relaxed font-medium">
+                <p>
+                  כדי שתוכלו לחזור ולערוך את קורות החיים שלכם בקלות, אנחנו ממליצים להוריד את קובץ ה-**פרויקט** (.resume) בנוסף לקובץ ה-PDF.
+                </p>
+                <div className="grid grid-cols-2 gap-4 mt-6">
+                  <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+                    <Printer className="mx-auto mb-2 text-blue-600" size={20} />
+                    <span className="font-bold text-slate-800 dark:text-slate-200">קובץ PDF</span>
+                    <p className="text-[10px] mt-1">להגשה למעסיק</p>
+                  </div>
+                  <div className="p-4 bg-emerald-50 dark:bg-emerald-900/10 rounded-2xl border border-emerald-100 dark:border-emerald-800">
+                    <Save className="mx-auto mb-2 text-emerald-600" size={20} />
+                    <span className="font-bold text-slate-800 dark:text-slate-200">קובץ פרויקט</span>
+                    <p className="text-[10px] mt-1">לעריכה בעתיד</p>
+                  </div>
+                </div>
+                <p className="pt-4 border-t border-slate-100 dark:border-slate-800">
+                  בפעם הבאה שתרצו לעשות שינוי, פשוט לחצו על **"טען פרויקט"** ובחרו את הקובץ שהורדתם. הכל יתמלא אוטומטית!
+                </p>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setShowHelp(false)} 
+                className="w-full mt-6 bg-slate-900 dark:bg-white text-white dark:text-slate-900 py-3.5 rounded-2xl font-black text-sm hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-slate-900/20 dark:shadow-white/10"
+              >
+                הבנתי, תודה!
               </button>
             </div>
           </div>
